@@ -1,0 +1,133 @@
+{
+  "version": "6",
+  "dialect": "sqlite",
+  "id": "ebad11c3-ad5c-41fc-a753-32a2d29cfefe",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "tables": {
+    "jobs": {
+      "name": "jobs",
+      "columns": {
+        "job_id": {
+          "name": "job_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "schema_version": {
+          "name": "schema_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "input_media_path": {
+          "name": "input_media_path",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "input_language": {
+          "name": "input_language",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "result_output_path": {
+          "name": "result_output_path",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "result_completed_at": {
+          "name": "result_completed_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "error_message": {
+          "name": "error_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "error_occurred_at": {
+          "name": "error_occurred_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "idx_jobs_status": {
+          "name": "idx_jobs_status",
+          "columns": [
+            "status"
+          ],
+          "isUnique": false
+        },
+        "idx_jobs_created_at": {
+          "name": "idx_jobs_created_at",
+          "columns": [
+            "created_at"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "status_valid": {
+          "name": "status_valid",
+          "value": "\"jobs\".\"status\" IN ('QUEUED', 'PROCESSING', 'COMPLETED', 'FAILED')"
+        },
+        "result_matches_status": {
+          "name": "result_matches_status",
+          "value": "(\n        (\"jobs\".\"status\" = 'COMPLETED'\n          AND \"jobs\".\"result_output_path\" IS NOT NULL\n          AND \"jobs\".\"result_completed_at\" IS NOT NULL)\n        OR\n        (\"jobs\".\"status\" != 'COMPLETED'\n          AND \"jobs\".\"result_output_path\" IS NULL\n          AND \"jobs\".\"result_completed_at\" IS NULL)\n      )"
+        },
+        "error_matches_status": {
+          "name": "error_matches_status",
+          "value": "(\n        (\"jobs\".\"status\" = 'FAILED'\n          AND \"jobs\".\"error_message\" IS NOT NULL\n          AND \"jobs\".\"error_occurred_at\" IS NOT NULL)\n        OR\n        (\"jobs\".\"status\" != 'FAILED'\n          AND \"jobs\".\"error_message\" IS NULL\n          AND \"jobs\".\"error_occurred_at\" IS NULL)\n      )"
+        }
+      }
+    }
+  },
+  "views": {},
+  "enums": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  },
+  "internal": {
+    "indexes": {}
+  }
+}

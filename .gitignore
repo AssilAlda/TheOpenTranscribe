@@ -18,9 +18,11 @@ dist/
 # node (future apps/web, apps/runner)
 node_modules/
 
-# local databases (introduced in a later phase, excluded defensively now)
+# local databases (Phase 3), including WAL sidecar files
 *.sqlite
 *.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm
 *.db
 
 # os metadata
