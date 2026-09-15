@@ -13,6 +13,18 @@ Owns:
 Does **not** own: HTTP/API, UI, credential storage, auth, transcription logic
 itself (that stays in `packages/transcriber`).
 
+## Setup
+
+Depends on `@theopentranscribe/db` via a local `file:../db` reference —
+**install/build `packages/db` first** (`cd ../db && npm install`; its own
+`prepare` script builds the `dist/` this package resolves against). See
+`packages/db/README.md`'s "Consumption" section for why.
+
+```
+cd packages/db && npm install
+cd ../runner && npm install
+```
+
 ## Running
 
 ```
