@@ -1,0 +1,23 @@
+{
+  "name": "@theopentranscribe/runner",
+  "version": "0.1.0",
+  "description": "Phase 4: lightweight TypeScript job runner. Polls packages/db for QUEUED jobs and invokes the Phase 1 Python transcriber as a subprocess.",
+  "type": "module",
+  "main": "./src/index.ts",
+  "private": true,
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@theopentranscribe/db": "file:../db"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.0",
+    "tsx": "^4.23.13",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.1"
+  }
+}

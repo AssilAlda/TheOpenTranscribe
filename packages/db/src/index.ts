@@ -26,3 +26,10 @@ export {
   DATA_DIR_UPLOADS_SUBDIR,
   DATA_DIR_OUTPUTS_SUBDIR,
 } from "./paths.js";
+
+// Re-exported so consumers (e.g. the Phase 4 runner) building queries
+// against `jobs` use this package's own drizzle-orm instance rather than
+// installing a second copy — without a shared workspace root, two installed
+// copies of drizzle-orm produce structurally-incompatible types for the
+// same logical query-builder objects.
+export { eq, and, sql } from "drizzle-orm";

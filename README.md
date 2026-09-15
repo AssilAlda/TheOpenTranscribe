@@ -5,15 +5,18 @@ CLI and a web dashboard. Users can self-host it, provide their own
 transcription provider API key, upload media, run transcriptions, and
 manage their transcription history through the dashboard.
 
-This repository is currently in its first phase: a standalone, tested CLI.
-The web dashboard, background job runner, and persistence layer described
-in the project's architecture plan arrive in later phases.
+The CLI, job contract, local SQLite persistence, and a lightweight background
+job runner are built. The web API, dashboard, and credential/settings
+management described in the project's architecture plan arrive in later
+phases.
 
 ## Status
 
 - ✅ CLI transcription engine (`packages/transcriber`)
-- ✅ JSON job contract (`packages/contract`) — shared shape for job state between the future web app and runner
-- ⏳ Web dashboard, job runner, persistence — not yet built
+- ✅ JSON job contract (`packages/contract`) — shared shape for job state between the web app and runner
+- ✅ SQLite / `DATA_DIR` persistence (`packages/db`)
+- ✅ Lightweight background job runner (`packages/runner`)
+- ⏳ Web API, dashboard, credential/settings management — not yet built
 
 ## Prerequisites
 
