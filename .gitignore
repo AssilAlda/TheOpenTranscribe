@@ -1,0 +1,31 @@
+# environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# python virtual environments
+.venv/
+venv/
+
+# python cache and build artifacts
+__pycache__/
+*.pyc
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+
+# node (future apps/web, apps/runner)
+node_modules/
+
+# local databases (introduced in a later phase, excluded defensively now)
+*.sqlite
+*.sqlite3
+*.db
+
+# os metadata
+.DS_Store
+
+# local application data (introduced in a later phase, excluded defensively now)
+data/
+.theopentranscribe/
