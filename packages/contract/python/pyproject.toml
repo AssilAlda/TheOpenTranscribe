@@ -1,0 +1,21 @@
+[project]
+name = "theopentranscribe-contract"
+version = "1.0.0"
+description = "JSON job contract shared between TheOpenTranscribe web application and runner"
+requires-python = ">=3.13"
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest==9.1.1",
+]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["theopentranscribe_contract*"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]

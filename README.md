@@ -12,6 +12,7 @@ in the project's architecture plan arrive in later phases.
 ## Status
 
 - ✅ CLI transcription engine (`packages/transcriber`)
+- ✅ JSON job contract (`packages/contract`) — shared shape for job state between the future web app and runner
 - ⏳ Web dashboard, job runner, persistence — not yet built
 
 ## Prerequisites

@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "job_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "status": "COMPLETED",
+  "created_at": "2026-09-15T10:00:00Z",
+  "updated_at": "2026-09-15T10:05:00Z",
+  "input": {
+    "media_path": "uploads/3fa85f64-5717-4562-b3fc-2c963f66afa6/original.mp4",
+    "language": "sv"
+  },
+  "result": {
+    "output_path": "outputs/3fa85f64-5717-4562-b3fc-2c963f66afa6/transcript.txt",
+    "completed_at": "2026-09-15T10:05:00Z"
+  },
+  "error": null
+}

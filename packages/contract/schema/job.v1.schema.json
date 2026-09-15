@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://theopentranscribe.dev/schema/job.v1.schema.json",
+  "title": "TheOpenTranscribe Job (v1)",
+  "description": "A transcription job document exchanged between the future web application and runner.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "job_id",
+    "status",
+    "created_at",
+    "updated_at",
+    "input",
+    "result",
+    "error"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "description": "Contract version this document conforms to. Bump only on breaking changes; add a new job.vN.schema.json alongside this one."
+    },
+    "job_id": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$",
+      "description": "A UUID (any RFC 9562 version, including the time-ordered UUIDv7) identifying the job. Not locked to a specific version so any conformant generator (Python, TypeScript, etc.) may produce it."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["QUEUED", "PROCESSING", "COMPLETED", "FAILED"]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timezone-aware timestamp."
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timezone-aware timestamp."
+    },
+    "input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["media_path"],
+      "properties": {
+        "media_path": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Path to the source media file, relative to DATA_DIR. No leading '/' and no '..' segments."
+        },
+        "language": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Language hint forwarded to the transcription provider as-is (e.g. an ISO 639-1 code such as 'sv' or 'en'). Not restricted by this contract to a fixed set. Omit for automatic language detection."
+        }
+      }
+    },
+    "result": {
+      "description": "Present only when status is COMPLETED; null otherwise.",
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["output_path", "completed_at"],
+          "properties": {
+            "output_path": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Path to the produced .txt transcript, relative to DATA_DIR. No leading '/' and no '..' segments."
+            },
+            "completed_at": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        }
+      ]
+    },
+    "error": {
+      "description": "Present only when status is FAILED; null otherwise.",
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["message", "occurred_at"],
+          "properties": {
+            "message": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Human-readable failure reason."
+            },
+            "occurred_at": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
