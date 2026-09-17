@@ -1,0 +1,111 @@
+/* Background is --color-bg -- the exact same beige as the main canvas, not
+   a separate cream/ivory nav-chrome token (that token, --color-sidebar-bg,
+   has been retired; see app/globals.css). Owner decision to simplify the
+   surface system: canvas and all primary nav chrome now read as one
+   unified beige surface, with white cards/inputs providing the app's only
+   surface-level contrast. --color-border is unchanged for the divider --
+   its contrast against --color-bg (~1.19:1) is the same subtle hairline
+   used everywhere else in the app that borders this same background
+   (e.g. PageLayout's header border-bottom), so it doesn't need its own
+   retune just because the surface it sits on changed identity.
+   Width restored to 200px (owner decision, explicitly reverted from a
+   180px density-pass edit) -- Sidebar width is locked; density comes from
+   typography/spacing/component sizing instead, never from narrowing the
+   nav rail itself. */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  width: 200px;
+  flex-shrink: 0;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  /* No top padding here on purpose -- .brandRow below owns the entire
+     top region's height (see its own comment) and needs to start flush
+     at y=0, the same way PageLayout's own .header does. */
+  padding: 0 var(--space-4) var(--space-6);
+  border-right: 1px solid var(--color-border);
+  background: var(--color-bg);
+}
+
+/* Structural alignment with the main content's page header (see
+   PageLayout.module.css's .header): both consume the same
+   `--app-header-height` token as an exact height, and both center their
+   own content with `display: flex; align-items: center`. This guarantees
+   the brand mark/wordmark and the page title sit on the literal same row
+   at true 100% zoom -- not an approximation from independently-tuned
+   padding (which is what this used to be, and which drifted out of sync
+   the last two times the surrounding sizes changed). Flush against the
+   sidebar's own top edge (.sidebar has no top padding), exactly like
+   .header is flush against the canvas's top edge. */
+.brandRow {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  height: var(--app-header-height);
+  padding: 0 var(--space-2);
+  /* --space-5, not the old --space-7: the row itself is now taller
+     (a fixed 44px vs. the old content-only ~20px), so this is trimmed to
+     keep the total distance from the sidebar's top edge to the first nav
+     item roughly where it already was, rather than silently growing the
+     gap as a side effect of the alignment fix. */
+  margin-bottom: var(--space-5);
+}
+
+.navList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.navLink {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-3);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  font-size: 0.8125rem;
+  font-weight: 550;
+  transition: background var(--transition-fast), color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.navLink svg {
+  flex-shrink: 0;
+}
+
+.navLink:hover {
+  background: var(--color-surface-sunken);
+  color: var(--color-text);
+}
+
+/* Cream + tinted accent, not a solid accent block: --color-accent-soft is
+   a pale tint that sits close to the page's own warm background, so the
+   selected row reads as "tinted into the page" rather than pasted on top
+   of it. The hairline edge is an inset box-shadow (not a border) so it
+   adds definition without changing the element's box size/padding. Both
+   the edge and the text use --color-accent-vivid (owner instruction: the
+   same vivid tone used for "choose a file" and the logo mark, brighter
+   than --color-accent-strong but still legible) -- not the raw fill
+   accent, so this stays softer than the primary CTA's full saturation. */
+.navLinkActive {
+  background: var(--color-accent-soft);
+  color: var(--color-accent-vivid);
+  box-shadow: inset 0 0 0 1px var(--color-accent-vivid);
+  font-weight: 650;
+}
+
+.navLinkActive:hover {
+  background: var(--color-accent-soft);
+  color: var(--color-accent-vivid);
+}
+
+@media (max-width: 820px) {
+  .sidebar {
+    display: none;
+  }
+}

@@ -1,0 +1,51 @@
+.page {
+  min-height: 100vh;
+  padding: var(--space-7) var(--space-5) var(--space-10);
+}
+
+/* Cross-page density audit: this was still at the first pass's value
+   (44rem) while --max-width-content moved on to 38rem in the second pass
+   -- tightened again by roughly the same ratio (44 -> 40rem) rather than
+   left behind at the old scale. Kept as its own literal (not the shared
+   token) since this page's own content is centered (`margin: 0 auto`)
+   rather than left-anchored like the Upload/Transcription-details
+   column, a genuinely different composition. */
+.container {
+  max-width: 40rem;
+  margin: 0 auto;
+}
+
+.topRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-7);
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 0.625rem;
+  font-weight: 650;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.backLink {
+  font-size: 0.6875rem;
+  font-weight: 550;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+.backLink:hover {
+  color: var(--color-accent-vivid);
+}
+
+@media (max-width: 560px) {
+  .page {
+    padding: var(--space-5) var(--space-4) var(--space-8);
+  }
+}

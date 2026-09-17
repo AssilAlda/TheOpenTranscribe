@@ -1,18 +1,21 @@
 # @theopentranscribe/web
 
-Phase 5: Web API (Next.js Route Handlers). Phase 6's dashboard UI will be
-added to this same package later (docs/ARCHITECTURE.md §15 locks Phase 5 and
-Phase 6 into one shared Next.js application).
+Phase 5 Web API (Next.js Route Handlers) + Phase 6 dashboard UI, sharing one
+Next.js application (docs/ARCHITECTURE.md §15 locks Phase 5 and Phase 6 into
+the same package).
 
 Owns:
 - Upload handling + validation (extension allowlist, streaming size limit,
   lightweight container-signature check, safe DATA_DIR-confined storage).
 - Job creation (`QUEUED` rows via `packages/db`).
 - Job history and detail queries.
-- Serving completed transcript results.
+- Serving completed transcript results (plain text and on-demand PDF export).
+- The dashboard UI: a persistent application shell (Transcribe /
+  Transcribed Files / Provider), paginated job history, a job detail modal
+  (with a direct-URL fallback route), transcript reading/copy/PDF export.
 
 Does **not** own: transcription itself, starting/managing the Phase 4 runner
-process, authentication, credential storage.
+process, authentication, credential storage/persistence.
 
 ## Setup
 
@@ -47,9 +50,21 @@ DATA_DIR=/path/to/data npm run build && DATA_DIR=/path/to/data npm start
 | `/api/jobs` | `GET` | Paginated job history (`?limit=&offset=`), newest first. |
 | `/api/jobs/:jobId` | `GET` | A single job's current state. |
 | `/api/jobs/:jobId/result` | `GET` | The completed transcript as `text/plain`. `409` if not yet `COMPLETED`. |
+| `/api/jobs/:jobId/result/pdf` | `GET` | (Phase 6, additive) The completed transcript rendered as an on-demand, never-persisted `application/pdf` download. `409` if not yet `COMPLETED`; `422 unsupported_pdf_characters` if the transcript has characters the vendored font can't render. |
+| `/` | page | **Transcribe** -- the upload workspace. One focused task: start a transcription. |
+| `/files` | page | **Transcribed Files** -- the full paginated job history/management surface. Row click opens the job detail modal; polling keeps every visible active job live regardless of which page it's on. |
+| `/jobs/:jobId` | page | **Direct/fallback job detail** -- same status/result content as the modal (shared component, no forked logic), reachable via bookmark, direct URL, refresh, or a modified click (new tab/copy link) from a Transcribed Files row. Not the normal interaction path. |
+| `/provider` | page | **Provider** -- Phase 6 UI only. Shows OpenAI as the provider and a disabled API-key field; no in-app credential storage yet (see below). |
 
-Responses are `{ data: ... }` on success, `{ error: { code, message } }` on
-failure, with a real HTTP status code in both cases.
+The persistent application shell (a left sidebar on desktop, a bottom tab bar
+on mobile -- `src/components/AppShell.tsx`, `Sidebar.tsx`, `MobileTabBar.tsx`)
+wraps all four pages via the root `app/layout.tsx`, with exactly these three
+primary destinations: Transcribe, Transcribed Files, Provider.
+
+JSON API responses are `{ data: ... }` on success, `{ error: { code, message } }` on
+failure, with a real HTTP status code in both cases. `/api/jobs/:jobId/result`
+and `/api/jobs/:jobId/result/pdf` return the transcript/PDF body directly on
+success (not the JSON envelope), still using the JSON error envelope on failure.
 
 ## Upload implementation (locked at Phase 5 phase start -- docs/ARCHITECTURE.md §15)
 
@@ -66,6 +81,71 @@ failure, with a real HTTP status code in both cases.
   failure along the way cleans up its own temp/final file; a hard process
   crash between rename and DB insert is the one accepted residual risk (see
   docs/ARCHITECTURE.md §15).
+
+## Phase 6 dashboard
+
+- No CSS framework/component library -- `app/globals.css` design tokens
+  (CSS custom properties) + CSS Modules per component. React Client
+  Components fetch the existing JSON API directly (`src/lib/apiClient.ts`);
+  Server Components are used only for the static page shells.
+- **Application shell:** persistent desktop sidebar / mobile bottom tab bar,
+  exactly three destinations (Transcribe, Transcribed Files, Provider) --
+  see `src/components/navItems.ts`/`navIcons.tsx` (small inline SVGs, no
+  icon library) and `AppShell.tsx`.
+- **Job detail is normally a modal**, opened from a Transcribed Files row
+  (`src/components/JobDetailModal.tsx`), built on the native `<dialog>` +
+  `.showModal()` (real focus trap, Escape-to-close, inert background, all
+  from the platform -- no modal library, no hand-rolled trap). Focus
+  restoration on close is explicit and deterministic
+  (`src/hooks/useJobDetailModal.ts`), not reliant on the browser's own
+  implicit restore-on-close behavior: it records the exact triggering row
+  element on open and restores focus to it on close (button, Escape/cancel,
+  or any programmatic close all funnel through the same single close path),
+  falling back to a stable page heading if that row is no longer in the DOM.
+  The modal and the `/jobs/[jobId]` fallback route both render the same
+  `src/components/JobStatusDetail.tsx` -- no forked status/result logic.
+- **Transcribed Files pagination:** "Load more" over the existing
+  `limit`/`offset` API (no new API, no infinite scroll). The ~5s active-job
+  polling refreshes only the first page and merges it in -- appended
+  ("Load more") history is never reset/duplicated. A **per-job
+  out-of-page tracker** additionally keeps any loaded `QUEUED`/`PROCESSING`
+  job individually live via `GET /api/jobs/:jobId` even once it's been
+  paginated off the first page (enrolled the moment it enters the loaded
+  set, e.g. right after "Load more" reveals it -- not only on the next
+  first-page event), stopping once it reaches a terminal status or is
+  covered by a first-page refresh again. See `src/hooks/useJobsPolling.ts`.
+- Live status updates are client-side interval polling only, paused while
+  the tab is hidden and refreshed immediately on return -- no
+  SSE/WebSockets/new push infrastructure.
+- The completed-job transcript experience is Read (inline, in
+  `src/components/TranscriptReader.tsx`) + Copy (Clipboard API) + Download
+  PDF -- there is no user-facing `.txt` download button; the existing
+  `text/plain` `/result` endpoint remains the API's canonical transcript
+  source, just not a user-facing download link.
+- **Provider page (`/provider`, `src/components/ProviderSettings.tsx`):**
+  presentation only. Shows OpenAI as the provider and the real intended
+  layout (API key field, Save), but the field itself is `disabled` (not
+  just Save) so a key can never be typed in and mistaken for saved; the
+  page states plainly that in-app storage isn't enabled yet and that
+  `OPENAI_API_KEY` in the server environment remains the only working
+  mechanism. No fetch/POST is wired to it at all. Secure credential
+  persistence is a separate, not-yet-approved decision -- see
+  `docs/ARCHITECTURE.md`'s credential-storage OPEN item.
+- **PDF export** (`src/lib/pdf/generateTranscriptPdf.ts`, `app/api/jobs/[jobId]/result/pdf/route.ts`):
+  generated on demand with `pdfkit`, streamed straight into the HTTP
+  response, never written to `DATA_DIR`. Embeds a vendored Noto Sans
+  Regular font (`src/lib/pdf/fonts/`, SIL OFL-1.1, see that directory's own
+  `README.md` for provenance) for Unicode support -- verified for Latin
+  Extended/Cyrillic/Greek (including Swedish `å ä ö`), **not** CJK or RTL
+  scripts in v1. Before rendering, the transcript's characters are checked
+  against the embedded font's actual glyph coverage (via `fontkit`, an
+  explicit direct dependency pinned to the same version `pdfkit` itself
+  uses, so npm dedupes to one copy); an unsupported character produces a
+  clear `422` error instead of a PDF with missing-glyph boxes. The client
+  ("Download PDF") never uses a plain `<a href>` link -- it drives its own
+  fetch → check-`ok` → Blob → object-URL → download flow
+  (`src/hooks/useDownloadTranscriptPdf.ts`) so it can show
+  generating/error/retry states.
 
 ## Interaction with `packages/db`
 
@@ -91,7 +171,18 @@ its README) -- do that first if this package's install/build ever fails with
 ## Scripts
 
 - `npm run dev` / `npm run build` / `npm start` -- Next.js dev/build/serve.
-- `npm test` -- Vitest suite (unit tests for validation/parsing logic, plus
-  route-handler tests calling the exported `GET`/`POST` functions directly
-  against a real temporary `DATA_DIR`).
+- `npm test` -- Vitest suite: unit tests for validation/parsing/PDF-generation
+  logic, route-handler tests calling the exported `GET`/`POST` functions
+  directly against a real temporary `DATA_DIR`, and (Phase 6) component/hook/
+  page tests. Component/hook/page tests opt into a `jsdom` environment
+  individually via a `// @vitest-environment jsdom` docblock
+  (`tests/components/`, `tests/hooks/`, `tests/pages/`) -- the existing
+  Phase 5 lib/route tests keep running in the default Node environment,
+  untouched. `@testing-library/react`, `@testing-library/jest-dom`, and
+  `@testing-library/user-event` are dev-only, jsdom-only dependencies; no
+  Playwright/Cypress/Storybook. `tests/setup/jsdomSetup.ts` also carries a
+  small test-only polyfill for `HTMLDialogElement`'s `showModal`/`show`/
+  `close` (jsdom implements the `open` attribute but none of these methods
+  as of the jsdom version this project uses) -- real browsers all implement
+  them natively, so this only affects the test environment.
 - `npm run typecheck` -- `tsc --noEmit`.

@@ -1,0 +1,131 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.sectionHeader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  color: var(--color-text);
+}
+
+.sectionSubtitle {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  max-width: 40rem;
+}
+
+/* Responsive card grid -- ready for more provider/account cards later
+   without a page redesign. One card per section today is not a
+   justification to fake more. */
+.cardGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--space-4);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.cardIdentity {
+  font-size: 0.8125rem;
+  font-weight: 650;
+  color: var(--color-text);
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  font-size: 0.625rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.statusBadge.neutral {
+  background: var(--color-status-queued-bg);
+  color: var(--color-status-queued-fg);
+}
+
+.statusBadge.info {
+  background: var(--color-status-processing-bg);
+  color: var(--color-status-processing-fg);
+}
+
+.cardMethod {
+  margin: 0;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.cardBody {
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+  flex: 1;
+}
+
+.code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  background: var(--color-surface-sunken);
+  border: 1px solid var(--color-border);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 0.8125em;
+}
+
+.cardAction {
+  margin-top: var(--space-1);
+}
+
+.actionButton {
+  padding: var(--space-2) var(--space-5);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-surface-sunken);
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  opacity: 0.75;
+  cursor: not-allowed;
+}
+
+@media (max-width: 560px) {
+  .cardGrid {
+    grid-template-columns: 1fr;
+  }
+}

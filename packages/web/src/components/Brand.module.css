@@ -1,0 +1,59 @@
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-sm);
+  background: var(--color-brand-mark-soft);
+  flex-shrink: 0;
+}
+
+.bar {
+  display: block;
+  width: 3.5px;
+  border-radius: var(--radius-pill);
+  background: var(--color-brand-mark);
+}
+
+/* `line-height: 1` matches PageLayout.module.css's `.title` treatment --
+   see its comment for why: without it, the inherited base 1.5 line-height
+   adds half-leading above/below the glyphs, and flexbox centers that
+   taller line box rather than the glyphs themselves, which is what let
+   this wordmark and the page-header title look misaligned even while
+   both sat in identically-sized, correctly-centered flex boxes. */
+.name {
+  font-size: 0.8125rem;
+  font-weight: 650;
+  line-height: 1;
+  letter-spacing: -0.005em;
+  color: var(--color-text);
+}
+
+/* compact is the only variant actually used (Sidebar, AppShell's mobile
+   top bar). First density pass: 26px -> 22px mark, 3px -> 2.5px bars.
+   Second pass: 22px -> 20px mark (~0.77x the original 26px) -- bars held
+   at 2.5px rather than cut again, already thin enough that further
+   shrinking risks disappearing against the mark's own tile rather than
+   reading as "denser". Not covered by the "don't shrink the bespoke nav
+   icons" protection -- that's specifically about the 3 nav destination
+   glyphs (Upload/Document/Connection), not this logo mark. */
+.compact .mark {
+  width: 20px;
+  height: 20px;
+}
+
+.compact .bar {
+  width: 2.5px;
+}
+
+.compact .name {
+  font-size: 0.6875rem;
+}

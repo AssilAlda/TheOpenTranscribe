@@ -1,0 +1,77 @@
+/* Card chrome (border/radius) lives on the shared .railColumn shell in
+   page.module.css -- this is the top section of that one merged rail card. */
+.rail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+  padding: var(--space-5);
+  background: var(--color-surface);
+}
+
+/* Real section heading -- dark text, sentence case, no uppercase/eyebrow
+   tracking -- matching how ProviderSettings introduces "Connected
+   accounts"/"Providers". Subordinate to the page's own task heading but
+   clearly stronger than the metadata labels below it (.factLabel: 0.625rem,
+   uppercase, muted). Spacing to the content below comes from .rail's own
+   `gap`, same as every other flex child here. */
+.heading {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  color: var(--color-text);
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.fact {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.factLabel {
+  font-size: 0.5625rem;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.factValue {
+  font-size: 0.75rem;
+  font-weight: 550;
+  line-height: 1.45;
+  color: var(--color-text);
+  overflow-wrap: anywhere;
+}
+
+.readyText {
+  margin: 0;
+  font-size: 0.6875rem;
+  font-weight: 650;
+  color: var(--color-accent-vivid);
+}
+
+.successText {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-status-completed-fg);
+}
+
+.successLink {
+  font-size: 0.75rem;
+  font-weight: 650;
+  color: var(--color-accent-vivid);
+  text-decoration: none;
+}
+
+.successLink:hover {
+  text-decoration: underline;
+}

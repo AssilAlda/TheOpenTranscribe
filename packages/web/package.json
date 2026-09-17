@@ -1,7 +1,7 @@
 {
   "name": "@theopentranscribe/web",
   "version": "0.1.0",
-  "description": "Phase 5: Web API (Next.js Route Handlers). Upload handling + validation, job creation, job/history queries, serving results. Phase 6's dashboard UI will be added to this same package later.",
+  "description": "Phase 5 Web API (Next.js Route Handlers) + Phase 6 dashboard UI: upload handling + validation, job creation, job/history queries, serving results, and a dashboard for uploading, tracking, reading, and exporting transcripts.",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -14,14 +14,22 @@
   "dependencies": {
     "@fastify/busboy": "3.2.2",
     "@theopentranscribe/db": "file:../db",
+    "fontkit": "^2.0.4",
     "next": "^16.3.5",
+    "pdfkit": "^0.20.2",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.7",
+    "@types/fontkit": "^2.0.9",
     "@types/node": "^26.6.0",
+    "@types/pdfkit": "^0.17.6",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
+    "jsdom": "^30.0.1",
     "typescript": "^7.0.2",
     "vitest": "^5.0.1"
   }

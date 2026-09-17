@@ -1,0 +1,62 @@
+/* `min-height: 100vh` alone is the classic source of extra iOS-keyboard
+   scroll: legacy `vh` is defined against the LAYOUT viewport (the largest
+   possible screen, as if browser chrome/keyboard didn't exist) and does
+   NOT shrink when the keyboard opens and the VISUAL viewport gets
+   shorter. Safari's own "scroll the focused input above the keyboard"
+   calculation reasons about the page's layout geometry, so an element
+   that's still sized to the pre-keyboard full-screen height can make that
+   calculation overshoot. `100dvh` (dynamic viewport height) tracks the
+   actual visual viewport instead, shrinking with the keyboard, which
+   lets that scroll calculation work off real, current geometry. The
+   plain `100vh` line stays first as the fallback for browsers that don't
+   support `dvh` -- an unrecognized `min-height: 100dvh` value is ignored
+   entirely by those browsers, leaving the `vh` line as the only one that
+   took effect, so this is purely additive with no fallback risk. */
+.shell {
+  display: flex;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.mainArea {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.mobileTopBar {
+  display: none;
+}
+
+.canvas {
+  flex: 1;
+  min-width: 0;
+}
+
+@media (max-width: 820px) {
+  .mobileTopBar {
+    display: flex;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    padding: var(--space-4) var(--space-4);
+    /* Same beige as the main canvas and MobileTabBar (the bottom bar) --
+       was plain --color-surface white, then a separate --color-sidebar-bg
+       cream; the owner has since simplified the surface system so all
+       primary nav chrome reuses --color-bg directly, the exact same value
+       as the canvas, rather than a dedicated near-match token. The
+       existing --color-border divider (already the app's one shared
+       hairline-border token, used the same way by Sidebar's own
+       border-right and PageLayout's header border-bottom) still reads as
+       a subtle, harmonious separator against this background -- kept
+       as-is rather than removed or heavied up. */
+    background: var(--color-bg);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .canvas {
+    padding-bottom: 72px; /* clears the fixed MobileTabBar */
+  }
+}

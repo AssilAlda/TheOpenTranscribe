@@ -1,0 +1,548 @@
+/* `--transcribe-stacked-min-height` is defined (and only meaningful) on the
+   Transcribe page's own .grid wrapper -- see page.module.css. The fallback
+   (`auto`) makes this a no-op for any other usage context, so this
+   component stays self-contained and isn't coupled to that page.
+   `flex: 1` is what lets this card grow to match the utility rail's height
+   on wide desktop: the page's grid stretches this element's *parent*
+   (.container) to the shared row height (CSS Grid's default row-stretch
+   behavior, no JS), and flex:1 is what propagates that stretched height
+   down into this actual visible card -- a plain block child wouldn't
+   inherit it automatically. In any other context (no flex parent), flex:1
+   has no effect and this renders exactly as a normal block card. */
+/* Top padding matches TranscriptionDetailsRail's own `.rail` padding
+   (--space-5) so "Upload" and "Transcription details" begin at the same
+   vertical level across the two equal-height cards. Left/right/bottom
+   pulled in further this pass, from --space-7 to --space-6 -- the card's
+   own outer frame was still one of the larger remaining sources of
+   "occupies too much space" once the dropzone's internal padding had
+   already been tightened. */
+.panel {
+  flex: 1;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: var(--space-5) var(--space-6) var(--space-6);
+  min-height: var(--transcribe-stacked-min-height, auto);
+}
+
+/* Same breakpoint as the Transcribe page's own two-column grid (see
+   page.module.css) -- container queries can't reference a shared CSS
+   variable for the threshold itself, only a literal value, so this one
+   number is intentionally duplicated rather than introducing a build-time
+   token for a single value.
+
+   Once .panel is stretched taller than its content (the equal-height
+   mechanism above), the extra height is distributed top-down instead of
+   centering everything as one block: the "Upload" heading keeps its own
+   natural size at the top, .form grows to fill whatever height remains
+   below it, and -- inside .form -- only the idle-state .dropzone actually
+   stretches (its own icon/CTA re-centers within the taller box via
+   `justify-content: center`). Every other state inside .form
+   (.selectedFile, the language/submit controls row, success/error text)
+   keeps its natural size and is not stretched: forcing e.g. the compact
+   selected-file summary to fill the same space the dropzone would have
+   read as an awkwardly empty panel, not a resolved layout, so those states
+   simply leave any leftover height as plain card background below them --
+   .form has no background of its own, so that reads as normal card
+   padding, not a mismatched gap. Flex items' default `min-height: auto`
+   still lets everything grow past its stretched size if a state's content
+   (e.g. a long error message) genuinely needs more room. */
+@container (min-width: 860px) {
+  .panel {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .form {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .dropzone {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .controlsRow {
+    flex: 0 0 auto;
+  }
+}
+
+/* Real section heading -- matches TranscriptionDetailsRail's own `.heading`
+   treatment (dark, sentence case, no uppercase/eyebrow tracking) instead of
+   the small muted eyebrow label this used to be. Pinned to the top of the
+   card at every width: it's a plain (non-flex-grown) block/flex item, so it
+   never moves regardless of how .form grows below it. */
+.heading {
+  margin: 0 0 var(--space-5);
+  font-size: 0.9375rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  color: var(--color-text);
+}
+
+/* Second density pass: vertical padding pulled from --space-10 (48px) to
+   --space-8 (36px) specifically -- the dropzone was named directly as
+   "still feels too tall" in owner review, so it gets its own, more
+   aggressive local reduction rather than relying solely on the shared
+   scale (which --space-10 is also used elsewhere, e.g. empty-state
+   padding, at a size that's still appropriate there). Still comfortably
+   generous for drag-and-drop -- just no longer the tallest single
+   element on the page. The wide-only `flex: 1` (above) still lets it
+   absorb genuine surplus height once the card is stretched to match the
+   utility rail. */
+.dropzone {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 2px dashed var(--color-border-strong);
+  border-radius: var(--radius-md);
+  padding: var(--space-8) var(--space-5);
+  text-align: center;
+  cursor: pointer;
+  background: var(--color-surface-sunken);
+  transition: border-color var(--transition-base), background var(--transition-base), box-shadow var(--transition-base),
+    transform var(--transition-fast);
+}
+
+/* Plain hover is a subtle affordance, not the strong "meaningful interaction"
+   treatment -- that's reserved for an actual drag-over (.dropzoneActive
+   below). A full accent-soft tint on ordinary mouse-rest read as an
+   unintentional persistent green state in review. */
+.dropzone:hover {
+  border-color: var(--color-border-strong);
+  background: var(--color-surface);
+}
+
+.dropzoneActive {
+  border-color: var(--color-accent-vivid);
+  border-style: solid;
+  background: var(--color-accent-soft);
+  box-shadow: var(--shadow-md);
+  transform: scale(1.008);
+}
+
+/* Container tightened once more (48 -> 42px) around the still-approved,
+   unshrunk 32px icon glyph -- (42-32)/2 = 5px of ring on each side, still
+   comfortable presence, just less dead space around the bespoke SVG. */
+.dropzoneIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-3);
+  transition: background var(--transition-base), color var(--transition-base), border-color var(--transition-base);
+}
+
+.dropzone:hover .dropzoneIcon {
+  border-color: var(--color-border-strong);
+  color: var(--color-text);
+}
+
+.dropzoneActive .dropzoneIcon {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-accent-contrast);
+}
+
+.hiddenInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.dropzoneTitle {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 650;
+  color: var(--color-text);
+  letter-spacing: -0.01em;
+}
+
+/* Quiet, neutral separator -- its own line between the primary instruction
+   and the interactive action, deliberately not styled with any emphasis. */
+.dropzoneOr {
+  margin: var(--space-1) 0 0;
+  font-size: 0.6875rem;
+  color: var(--color-text-muted);
+}
+
+.dropzoneSubtitle {
+  margin: var(--space-1) 0 0;
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+}
+
+.dropzoneChooseLink {
+  color: var(--color-accent-vivid);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  transition: text-decoration-color var(--transition-fast);
+}
+
+.dropzone:hover .dropzoneChooseLink {
+  text-decoration-color: currentColor;
+}
+
+.selectedFile {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-sunken);
+}
+
+.fileTypeBadge {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 42px;
+  height: 42px;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--color-accent-soft);
+  color: var(--color-accent-vivid);
+  font-size: 0.5625rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.selectedFileInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.selectedFileName {
+  margin: 0;
+  font-weight: 600;
+  font-size: 0.8125rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.selectedFileMeta {
+  margin: var(--space-1) 0 0;
+  font-size: 0.6875rem;
+  color: var(--color-text-secondary);
+}
+
+.readyText {
+  color: var(--color-status-completed-fg);
+  font-weight: 600;
+}
+
+.selectedFileActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex-shrink: 0;
+}
+
+.changeButton {
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.changeButton:hover {
+  background: var(--color-border);
+  color: var(--color-text);
+}
+
+.clearButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-pill);
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.clearButton:hover {
+  background: var(--color-border);
+  color: var(--color-text);
+}
+
+.warningText {
+  margin: var(--space-3) 0 0;
+  font-size: 0.6875rem;
+  color: var(--color-danger);
+}
+
+/* Capped so this row stays a coherent, left-anchored unit (language field
+   next to its button) instead of stretching edge-to-edge and leaving a
+   large dead gap after the button once the outer card is wide -- the
+   Transcribe page's primary column can now grow well past this card's
+   previous fixed width. The cap (two 12rem-max children plus this gap,
+   with room to spare) is comfortably above this row's narrower-card width
+   too, so it doesn't change anything there. (Second density pass: field/
+   button max-width 14rem -> 12rem, row cap 32rem -> 27rem -- their own
+   accessible 44px height is untouched; only the width/footprint of the
+   control group was tightened.) */
+/* `margin-inline: auto` centers this capped-width row as a unit within the
+   card whenever the card is wider than the 27rem cap. That alone isn't
+   enough at in-between (narrower-desktop/tablet) widths, though: once the
+   card's own width drops below 27rem, this row has no room left over for
+   `auto` to distribute, so the row becomes exactly as wide as the card --
+   and once `.fieldGroup` and `.submitButton` (both `flex: 1`, both capped
+   at their own 12rem) hit that shared cap, any width the row has beyond
+   "12rem + gap + 12rem" was previously left as dead space after the
+   button (flex's default `justify-content: flex-start`), reading as the
+   whole group pinned to the card's left edge. `width: 100%` makes the
+   block-level sizing explicit, and `justify-content: center` is what
+   actually fixes that case: it centers the fieldGroup+button group as a
+   unit within whatever width the row ends up with, so the same rule works
+   whether the row is capped at 27rem (wide desktop) or stretched to the
+   card's own narrower width (tablet/narrow desktop) -- not dependent on
+   the wide-only `@container` rule above. Neutralized on mobile below,
+   where both children stretch to fill the row instead. */
+.controlsRow {
+  width: 100%;
+  max-width: 27rem;
+  margin-top: var(--space-4);
+  margin-inline: auto;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: var(--space-3);
+}
+
+.fieldGroup {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  max-width: 12rem;
+}
+
+.label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.labelOptional {
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+
+/* `min-height: 44px` is an accessible touch-target floor, not a visual
+   density choice -- left unscaled by the density pass even though
+   everything around it (padding, font-size, the field's own max-width)
+   was tightened. See .submitButton's own note below; both controls share
+   this same floor deliberately. */
+.textInput {
+  padding: var(--space-3) var(--space-3);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  font-size: 0.8125rem;
+  background: var(--color-surface);
+  color: var(--color-text);
+  transition: border-color var(--transition-fast);
+  min-height: 44px;
+}
+
+/* Overrides the global `:focus-visible` outline (see app/globals.css) for
+   this one input: that rule draws a separate 2px outline offset 2px
+   outside the border, which combined with an orange border-color read as
+   a thick double orange line around the field. `outline: none` here
+   removes that outer ring; the border itself (same 1px width as idle,
+   only its color changes) is the entire focus indicator, so there's no
+   layout shift and no second line. Scoped to `.textInput` specifically --
+   every other focusable control keeps the shared orange
+   --color-focus-ring outline unchanged. */
+.textInput:focus-visible {
+  border-color: var(--color-input-focus);
+  outline: none;
+}
+
+/* Sized to match .fieldGroup (the Language field) exactly, in both
+   dimensions: `flex: 1; max-width: 12rem;` is the same rule .fieldGroup
+   uses, so the two grow/shrink together and stay equal-width at any row
+   width, not just one breakpoint; `min-height: 44px` matches .textInput's
+   own min-height so the button and the actual input box line up in
+   height too (not .fieldGroup's taller total height, which also includes
+   its label) -- and is left at 44px by both density passes on purpose, as
+   an accessible touch-target floor, even though the button's width/
+   padding/font-size were tightened again alongside everything else. */
+.submitButton {
+  flex: 1;
+  max-width: 12rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  min-height: 44px;
+  /* Local override -- --radius-pill is shared by many unrelated controls
+     (Copy/Download PDF, status pills, close buttons, the brand mark), so
+     this button gets its own literal value rather than changing that
+     shared token. Kept as its own literal (not re-derived from the
+     recalibrated --radius-lg/-md) since 8px was already deliberately
+     smaller than either and still reads correctly against the tightened
+     scale. */
+  border-radius: 8px;
+  border: none;
+  background: var(--color-accent);
+  color: var(--color-accent-contrast);
+  font-size: 0.8125rem;
+  font-weight: 650;
+  letter-spacing: 0.002em;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: background var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast),
+    opacity var(--transition-fast);
+  white-space: nowrap;
+}
+
+.submitButton:hover:not(:disabled) {
+  background: var(--color-accent-hover);
+  box-shadow: var(--shadow-md);
+}
+
+.submitButton:active:not(:disabled) {
+  background: var(--color-accent-active);
+  transform: scale(0.98);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Deliberately NOT dimmed -- owner decision: disabled (no file picked yet,
+   uploading, or already done) keeps the exact same fill/foreground as the
+   enabled button, full saturation, no opacity/gray/pale treatment. The
+   button is still genuinely non-interactive: it uses the native `disabled`
+   attribute (see UploadPanel.tsx), and :hover/:active above are both
+   scoped with `:not(:disabled)`, so neither hover nor pressed styling can
+   ever apply here regardless of this rule. `cursor: not-allowed` is the
+   only non-color signal that the control won't respond. */
+.submitButton:disabled {
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Base ring + spinning arc both use --color-accent-contrast's own tone
+   (dark, at two different opacities) rather than white, matching the
+   button's own dark-on-accent foreground so the spinner doesn't introduce
+   a second, inconsistent contrast treatment on the same control. */
+.spinner {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid rgba(26, 24, 21, 0.25);
+  border-top-color: var(--color-accent-contrast);
+  animation: spin 700ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.successText {
+  margin: var(--space-3) 0 0;
+  font-size: 0.75rem;
+  color: var(--color-status-completed-fg);
+  font-weight: 550;
+}
+
+.successLink {
+  color: var(--color-accent-vivid);
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.successLink:hover {
+  text-decoration: underline;
+}
+
+.errorText {
+  margin: var(--space-3) 0 0;
+  font-size: 0.75rem;
+  color: var(--color-danger);
+  font-weight: 550;
+}
+
+@media (max-width: 560px) {
+  .panel {
+    padding: var(--space-5);
+  }
+
+  .dropzone {
+    padding: var(--space-7) var(--space-4);
+  }
+
+  .controlsRow {
+    flex-direction: column;
+    align-items: stretch;
+    /* Both children stretch to fill the row's own width here, so there's
+       no leftover main-axis space for `justify-content: center` (above)
+       to act on -- this override just makes that explicit rather than
+       relying on the reader to work it out. */
+    justify-content: flex-start;
+  }
+
+  .fieldGroup {
+    max-width: none;
+  }
+
+  .submitButton {
+    /* Reset the desktop `max-width: 12rem` match-the-field cap -- on
+       mobile both controls stack and stretch full-width instead (the
+       already-approved mobile behavior), same as .fieldGroup above. */
+    max-width: none;
+    width: 100%;
+  }
+
+  .selectedFile {
+    flex-wrap: wrap;
+  }
+
+  .selectedFileActions {
+    margin-left: auto;
+  }
+
+  /* iOS Safari auto-zooms the whole page when a focused text input's
+     computed font-size is below ~16 CSS px -- the desktop density pass
+     had tightened this to 0.8125rem (13px), which is well under that
+     threshold. Literal `16px`, not `1rem`: the iOS behavior is keyed to
+     an actual CSS-pixel value, not to this app's own rem scale, so tying
+     it to a token that could itself change later would risk silently
+     reintroducing the bug. Scoped to mobile only -- desktop keeps its
+     existing 13px, since the zoom behavior doesn't exist there and the
+     owner asked for desktop to stay untouched. Nothing else about the
+     control changes: min-height stays the existing 44px accessible
+     floor (already comfortably larger than a 16px line plus its
+     padding needs), and width/padding/border/radius/focus treatment are
+     all unaffected by a font-size-only change. */
+  .textInput {
+    font-size: 16px;
+  }
+}

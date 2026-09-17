@@ -7,4 +7,11 @@ export default defineConfig({
       "@": fileURLToPath(new URL("./src", import.meta.url)),
     },
   },
+  test: {
+    // Default environment stays "node" (matches Phase 5's existing lib/route
+    // tests, which need real fs/DB access, not a DOM). Component tests opt
+    // into jsdom individually via a `// @vitest-environment jsdom` docblock
+    // at the top of the file -- see tests/components/*.test.tsx.
+    setupFiles: ["./tests/setup/jsdomSetup.ts"],
+  },
 });

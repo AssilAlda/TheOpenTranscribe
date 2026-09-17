@@ -1,0 +1,77 @@
+/* The bottom section of the one merged rail card (outer chrome lives on
+   .railColumn in page.module.css). The sunken surface tone plus the
+   border-top divider (not a full border -- this sits flush under
+   TranscriptionDetailsRail's section, not as its own separate card) is
+   what reads as the lighter, more instructional half of the same panel.
+   `flex: 1` lets this section (only, as the last one) absorb any leftover
+   space when .railColumn is taller than its natural content -- e.g. the
+   stacked-breakpoint min-height shared with the Upload card -- so that
+   space reads as generous bottom padding on this section's own sunken
+   tone instead of exposing .railColumn's unstyled background beneath it. */
+.card {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: var(--space-3);
+  min-width: 0;
+  padding: var(--space-5);
+  background: var(--color-surface-sunken);
+  border-top: 1px solid var(--color-border);
+}
+
+.title {
+  margin: 0;
+  font-size: 0.625rem;
+  font-weight: 650;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.step {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.stepNumber {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  margin-top: 1px;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-soft);
+  color: var(--color-accent-vivid);
+  font-size: 0.5625rem;
+  font-weight: 700;
+}
+
+.stepBody {
+  min-width: 0;
+}
+
+.stepTitle {
+  margin: 0;
+  font-size: 0.6875rem;
+  font-weight: 650;
+  color: var(--color-text);
+}
+
+.stepText {
+  margin: var(--space-1) 0 0;
+  font-size: 0.6875rem;
+  line-height: 1.45;
+  color: var(--color-text-secondary);
+}

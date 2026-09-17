@@ -1,0 +1,222 @@
+/* Measures the actual canvas width available to this page (after the
+   sidebar, not the raw viewport) so the two-column upgrade below only
+   kicks in once there's genuinely enough room -- a plain viewport media
+   query can't account for the sidebar's width, a container query can. */
+.layout {
+  container-type: inline-size;
+}
+
+/* Default (stacked) mode: a plain vertical stack in logical/DOM order
+   (intro, upload card, rail card -- "Transcription details" is an internal
+   heading inside the rail card itself, see TranscriptionDetailsRail).
+   Spacing between the three items comes from each one's own margin-bottom
+   below. The wide two-column mode further down switches this to a real
+   CSS Grid with named areas, which is what lets the two cards match height
+   -- without touching source/DOM order, so the stacked order above stays
+   the actual accessible/keyboard order at every width. */
+.grid {
+  display: flex;
+  flex-direction: column;
+  /* Shared floor so the Upload card and the Transcription Details shell
+     read as the same class of workspace surface once stacked, regardless
+     of which state either happens to be in (idle / selected-file /
+     success -- the latter two are naturally much shorter for both
+     surfaces). No existing single CSS value represents "the upload
+     card's stable height" (it varies by state), so this approximates its
+     idle-state height instead of duplicating that number in two files.
+     Consumed by UploadPanel's .panel and this page's own .railColumn;
+     reset to `auto` inside the wide two-column breakpoint below, where
+     equal height is instead achieved by real grid-row stretch.
+     28rem -> 25rem as part of the density pass: the idle-state Upload
+     card this approximates is itself shorter now (tighter padding,
+     smaller dropzone icon/type), so the floor it approximates follows. */
+  --transcribe-stacked-min-height: 25rem;
+}
+
+/* `margin-top` nudges the intro block up toward the shared page header
+   above it, tightening the top of the page -- derived from the spacing
+   scale (--space-4 + --space-1 = 20px, ~0.5cm) rather than a bare pixel
+   literal, and scoped to this page only (PageLayout's own header/content
+   padding, shared by every page, is untouched). */
+.header {
+  max-width: var(--max-width-content);
+  margin-top: calc(-1 * (var(--space-4) + var(--space-1)));
+  margin-bottom: var(--space-6);
+}
+
+.title {
+  margin: 0 0 var(--space-2);
+  font-size: 1.1875rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: var(--color-text);
+}
+
+.subtitle {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+}
+
+/* `display: flex` here is what makes UploadPanel's own `flex: 1` (on its
+   root .panel) meaningful -- this element is .panel's flex parent, and
+   whatever height *this* item ends up with (its own natural height while
+   stacked; the wide grid's stretched row height once two-column) is what
+   flex:1 propagates down into the actual visible card. */
+.container {
+  display: flex;
+  flex-direction: column;
+  max-width: var(--max-width-content);
+  min-width: 0;
+  margin-bottom: var(--space-8);
+}
+
+/* Owns the rail's single outer card chrome (border/radius, no shadow --
+   deliberately quieter than the upload card's shadow-md so it reads as
+   secondary by weight, not just by size). TranscriptionDetailsRail and
+   WhatHappensNext render as two internal sections (their own background
+   tone + padding) inside this one shared shell rather than two separate
+   bordered cards stacked with a gap -- two default-bordered boxes read as
+   generic "card as lazy container" scaffolding; one considered rail with an
+   internal divider reads as a deliberately composed utility panel.
+   `overflow: hidden` clips each section's flush background to this shell's
+   rounded corners. `min-height` is the same shared floor as UploadPanel's
+   own card (see .grid above) -- WhatHappensNext's own section absorbs any
+   resulting leftover space (see its `flex: 1`), so it never shows through
+   as unstyled blank space. */
+/* `max-width` matches .container's own (both share --max-width-content)
+   so the two stacked cards share identical rails -- without this,
+   .container was the only one of .grid's two flex children actually
+   capped in stacked mode; .railColumn had no width constraint of its own
+   here, so the column-flex .grid's default `align-items: stretch`
+   expanded it to fill however much width the page had available, up to
+   the page's own outer bounds -- visibly wider than .container's capped
+   width in the range between --max-width-content and the wide
+   two-column @container threshold below (i.e. right after the layout
+   collapses out of two-column mode). Reset back to `none` inside that
+   wide breakpoint, mirroring .container's own reset there, since the
+   grid's own column track (minmax(300px, 360px)) is what constrains this
+   card's width once two-column. */
+.railColumn {
+  display: flex;
+  flex-direction: column;
+  max-width: var(--max-width-content);
+  min-width: 0;
+  min-height: var(--transcribe-stacked-min-height);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+/* Wide enough for the readable-width upload workflow plus a secondary
+   ~260-320px contextual rail without squeezing either. Below this, the
+   rail simply moves underneath the workflow via normal document flow.
+   A 2-row grid (named areas): "intro" spans both columns in row 1, then
+   "upload"/"rail" share row 2. Via the default `align-items: stretch`,
+   both row-2 items are stretched to the row's own height -- whichever of
+   Upload/rail is naturally taller -- with `flex: 1` on each card's actual
+   visible surface (.panel, WhatHappensNext's .card) propagating that
+   stretched height down so it reads as real card height, not blank space
+   after a shorter card. This achieves equal card height with zero JS.
+   Threshold recalibrated 1000px -> 860px as part of the density pass: the
+   density recalibration on both columns' own content (padding, type,
+   the rail's 300-360px -> 260-320px track) means each column now needs
+   less physical width to look uncrowded, so the same two-column
+   composition can -- and should -- kick in earlier than before; this also
+   compensates for the fact that a "too-large-at-100%" complaint reads,
+   compared with a zoomed-out browser, as if every threshold effectively
+   needs to trigger at a smaller real container width. */
+@container (min-width: 860px) {
+  .grid {
+    display: grid;
+    grid-template-columns: minmax(420px, 1fr) minmax(260px, 320px);
+    grid-template-areas:
+      "intro intro"
+      "upload rail";
+    row-gap: var(--space-6);
+    column-gap: var(--space-8);
+    /* Workspace-level ceiling, left-anchored (no margin-inline: auto) --
+       reuses the shared --max-width-workspace token (also used as the
+       reasonable "how wide can this ever get" ceiling elsewhere) instead
+       of a page-local magic number. Derived from a ~1600-1700px "wide
+       laptop/desktop" reference: Sidebar (200px + border) + this page's
+       own content inset (2 * --space-7) leaves roughly 1350-1450px of
+       canvas there, so this cap lets the workspace use nearly all of it
+       at that reference width while still holding a firm, intentional
+       line on larger/ultrawide monitors instead of stretching
+       indefinitely. */
+    max-width: var(--max-width-workspace);
+    /* Equal-footprint parity is a stacked-layout concern only -- on wide
+       desktop, real grid-row stretch (above) already gives exact equal
+       height, so this floor is no longer needed. */
+    --transcribe-stacked-min-height: auto;
+  }
+
+  .header {
+    grid-area: intro;
+    margin-bottom: 0;
+  }
+
+  .container {
+    grid-area: upload;
+    max-width: none;
+    margin-bottom: 0;
+  }
+
+  .railColumn {
+    grid-area: rail;
+    max-width: none;
+  }
+}
+
+/* Mobile-shell state: this is a plain VIEWPORT media query, deliberately
+   not a @container query, because it targets a different condition than
+   the two-column breakpoint above -- "has the desktop Sidebar been
+   replaced by MobileTabBar" (a viewport-width fact, see the identical
+   `@media (max-width: 820px)` in Sidebar.module.css/
+   MobileTabBar.module.css/AppShell.module.css), not "is there enough
+   canvas width for two columns" (a container-width fact). Below 820px
+   viewport width, .layout's own available canvas width is always well
+   under the 860px two-column threshold too (820px viewport minus
+   PageLayout's own padding leaves less canvas than that), so .grid is
+   always in its plain stacked flex-column mode here -- this rule only
+   ever applies to that stacked state, never conflicts with the
+   two-column grid above.
+   Once the Sidebar disappears, the page's own content area becomes the
+   full viewport width instead of "viewport minus a 200px sidebar", and
+   the stacked column's existing left alignment (intentional above 820px,
+   where the Sidebar itself provides the page's left visual anchor) reads
+   as a large, unbalanced empty gutter on the right instead. Centering the
+   single shared .grid wrapper here -- not each card separately -- keeps
+   .header/.container/.railColumn's own matching
+   `max-width: var(--max-width-content)` doing the real width-capping
+   work; this just re-centers that whole already-equal-width column as
+   one unit, so both cards keep identical rails AND equal gutters on both
+   sides.
+   (Both the 820px shell breakpoint and the 860px two-column threshold
+   above were recalibrated down from their prior 960px/1000px values as
+   part of the density pass -- see the two-column rule's own comment for
+   why a denser composition can trigger at a smaller container width.) */
+@media (max-width: 820px) {
+  .grid {
+    width: 100%;
+    max-width: var(--max-width-content);
+    margin-inline: auto;
+  }
+}
+
+@media (max-width: 560px) {
+  .header {
+    /* Gentler than the desktop nudge -- PageLayout's own content padding
+       is already smaller on mobile, so pulling up by the same amount
+       would crowd the page header. */
+    margin-top: calc(-1 * var(--space-2));
+    margin-bottom: var(--space-5);
+  }
+
+  .title {
+    font-size: 1.0625rem;
+  }
+}

@@ -1,0 +1,205 @@
+.root {
+  /* No page chrome here (no <main>/container/max-width) -- callers (the
+     modal body, the fallback page wrapper) own layout/width. */
+}
+
+.header {
+  margin-bottom: var(--space-6);
+}
+
+.title {
+  margin: 0 0 var(--space-3);
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  word-break: break-word;
+  color: var(--color-text);
+}
+
+.metaRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.metaText {
+  font-size: 0.6875rem;
+  color: var(--color-text-secondary);
+}
+
+.degradedNotice {
+  margin: 0 0 var(--space-4);
+  font-size: 0.6875rem;
+  color: var(--color-text-muted);
+}
+
+/* Status surfaces: icon badge + text, one coherent panel per state. */
+.stateSurface {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-6);
+}
+
+.stateIconBadge {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-pill);
+}
+
+.queued .stateIconBadge {
+  background: var(--color-status-queued-bg);
+  color: var(--color-status-queued-fg);
+}
+
+.processing .stateIconBadge {
+  background: var(--color-status-processing-bg);
+  color: var(--color-status-processing-fg);
+}
+
+.failed .stateIconBadge {
+  background: var(--color-status-failed-bg);
+  color: var(--color-status-failed-fg);
+}
+
+.stateText {
+  padding-top: var(--space-1);
+}
+
+.stateHeadline {
+  margin: 0 0 var(--space-1);
+  font-weight: 650;
+  font-size: 0.875rem;
+  color: var(--color-text);
+}
+
+.stateBody {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.stateTimestamp {
+  margin: var(--space-2) 0 0;
+  font-size: 0.625rem;
+  color: var(--color-text-muted);
+}
+
+/* Restrained animated "waveform" indicator for PROCESSING -- respects
+   prefers-reduced-motion via the global rule in app/globals.css. */
+.processingIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  width: 16px;
+  height: 16px;
+}
+
+.processingBar {
+  display: block;
+  width: 3px;
+  height: 60%;
+  border-radius: var(--radius-pill);
+  background: currentColor;
+  animation: processingPulse 1s ease-in-out infinite;
+}
+
+.processingBar:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.processingBar:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes processingPulse {
+  0%,
+  100% {
+    height: 35%;
+    opacity: 0.7;
+  }
+  50% {
+    height: 100%;
+    opacity: 1;
+  }
+}
+
+.loadingCard {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.skeletonLine {
+  height: 14px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(90deg, var(--color-border) 25%, var(--color-surface-sunken) 50%, var(--color-border) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+.notFoundCard {
+  background: var(--color-surface);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  padding: var(--space-8) var(--space-6);
+  text-align: center;
+}
+
+.notFoundTitle {
+  margin: 0 0 var(--space-2);
+  font-weight: 650;
+  font-size: 0.875rem;
+}
+
+.notFoundBody {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.8125rem;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@media (max-width: 560px) {
+  .title {
+    font-size: 1.0625rem;
+  }
+
+  .stateSurface {
+    padding: var(--space-5);
+    gap: var(--space-4);
+  }
+
+  .stateIconBadge {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+@media (max-width: 360px) {
+  .stateSurface {
+    flex-direction: column;
+  }
+}

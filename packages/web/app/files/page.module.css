@@ -1,0 +1,11 @@
+.subtitle {
+  margin: 0 0 var(--space-6);
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+}
+
+@media (max-width: 560px) {
+  .subtitle {
+    margin-bottom: var(--space-5);
+  }
+}

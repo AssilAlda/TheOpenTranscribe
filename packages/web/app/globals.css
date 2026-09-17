@@ -1,0 +1,272 @@
+/*
+ * Design tokens for TheOpenTranscribe's dashboard (Phase 6).
+ * Deliberately small: colors, spacing, type, radius, shadow, and the four
+ * job-status colors. No CSS framework -- plain custom properties + CSS
+ * Modules per component (see docs/ARCHITECTURE.md's Phase 6 section).
+ * System font stacks only (no next/font/google): this is a self-hosted app
+ * that other people build themselves, so we avoid any build-time network
+ * dependency for a web font and get a polished result through spacing,
+ * hierarchy, and color instead.
+ *
+ * Token roles (refined in the post-visual-review pass): page background,
+ * elevated surface, a slightly sunken surface for secondary panels, primary
+ * accent (with distinct hover/active/soft/contrast steps), and status colors
+ * that are deliberately NOT all variations of the accent color -- "completed"
+ * reads as a distinct emerald, not "more teal".
+ *
+ * Nav-chrome surface, retired: an earlier pass gave the Sidebar/MobileTabBar
+ * their own dedicated --color-sidebar-bg (a warm ivory between --color-bg
+ * and white), to fix them reading as stark white against the beige canvas.
+ * The owner has since simplified the surface system on purpose: all
+ * primary navigation chrome (Sidebar, the mobile top brand bar,
+ * MobileTabBar) now deliberately reuses --color-bg directly -- the exact
+ * same beige as the main canvas, not a separate near-match value -- so
+ * nav chrome and canvas are visually one surface, with white cards/inputs
+ * providing the only surface-level contrast in the app. --color-sidebar-bg
+ * had no other consumer, so it was removed outright rather than kept as a
+ * redundant alias; see Sidebar.module.css/AppShell.module.css/
+ * MobileTabBar.module.css for the direct --color-bg usage.
+ *
+ * Accent family, EXPERIMENT (hot orange -> pink, reversible): the owner
+ * is visually testing #FA78AE as a full replacement for the prior hot
+ * orange (#F37616) before deciding between the two. The base is an
+ * owner-fixed, non-negotiable value -- not recalibrated -- at hue ~335deg,
+ * saturation ~93%, lightness ~72.5%. Every supporting step is derived at
+ * the SAME hue (no drift toward magenta ~300deg or purple ~280deg) with
+ * saturation/lightness tuned so hover/active read as controlled, richer
+ * steps of the same pink rather than a different color family: hover
+ * (S90 L65) and active (S92 L58) both keep >=4.5:1 against
+ * --color-accent-contrast (4.80:1 at the darkest/active step -- measured,
+ * not assumed). --color-accent-contrast is dark text, also measured
+ * rather than assumed: the base's own contrast against white is only
+ * 2.51:1 (fails AA outright), so white text was never viable here,
+ * matching the owner's explicit instruction not to darken the fixed base
+ * just to enable it -- dark text is simply the correct answer at 7.05:1.
+ * --color-accent-strong (S78 L34, same hue) is a deep rose/raspberry,
+ * originally used for links/active-nav text/focus rings; owner instruction
+ * later moved links and active-nav text to the brighter
+ * --color-accent-vivid instead (see its own comment below) for a more
+ * energetic identity, so --color-accent-strong's only remaining consumer
+ * is --color-focus-ring -- kept as its own distinct step regardless
+ * (still 7.1-8.2:1 against white/cream/soft-bg, comfortably past AA) since
+ * a keyboard-focus indicator is a different role from branded text. The hue sits
+ * ~324deg from --color-danger's rust-red (~11deg) and ~195deg from
+ * --color-status-completed-fg's green (~140deg) -- effectively opposite
+ * ends of the wheel from both, so no semantic collision risk. Reserve raw
+ * --color-accent for surfaces it actually fills.
+ */
+
+:root {
+  --color-bg: #f6f4ef;
+  --color-surface: #ffffff;
+  --color-surface-sunken: #fbfaf6;
+  --color-border: #e5e1d7;
+  --color-border-strong: #d2ccbc;
+
+  --color-text: #1a1815;
+  --color-text-secondary: #5f594c;
+  --color-text-muted: #948c7a;
+
+  --color-accent: #fa78ae;
+  --color-accent-hover: #f65598;
+  --color-accent-active: #f63183;
+  --color-accent-soft: #fdeaf2;
+  --color-accent-contrast: var(--color-text);
+  --color-accent-strong: #9a134b;
+
+  /* A brighter, still-vivid alternative to --color-accent-strong for
+     small accent-colored TEXT and the brand mark specifically --
+     --color-focus-ring keeps using --color-accent-strong unchanged.
+     Owner feedback on the dropzone's "choose a file" link: the raw fill
+     color (--color-accent) is too low contrast as text (~2.4-2.5:1
+     against the dropzone's white/cream background, well under the 4.5:1
+     AA minimum), but --color-accent-strong read as "too dark" for that
+     use -- then reused, on further owner instruction, for the active-nav
+     text/edge and the brand mark too. Same ~335deg hue, saturation kept
+     high (86%) so it still reads as a vivid, energetic pink rather than a
+     muted one, at L43 -- partway between --color-accent-active (L58) and
+     --color-accent-strong (L34). L43, not the initially-picked L45: L45
+     passed comfortably against white/cream (5.15:1/4.93:1) but only
+     4.47:1 against --color-accent-soft, the active-nav's own tinted
+     background -- just under the 4.5:1 minimum once this token started
+     being used as text sitting directly on that tint. L43 clears every
+     surface this token actually renders text on: 5.53:1 (white),
+     5.30:1 (dropzone's sunken idle bg), 4.80:1 (--color-accent-soft, the
+     active-nav tile), 4.89:1 (--color-brand-mark-soft, the logo tile). */
+  --color-accent-vivid: #cc0f5e;
+
+  --color-focus-ring: var(--color-accent-strong);
+
+  /* A dedicated neutral focus color for the Language text input only --
+     NOT a replacement for --color-focus-ring, which every other
+     focusable control (nav links, buttons, the modal) keeps using
+     unchanged, including through the current pink accent experiment
+     below. This exists because a plain text field's focus state reusing
+     the accent-colored --color-focus-ring family (border + the global
+     `:focus-visible` outline below) reads as a heavy double-colored line
+     around the input -- the owner asked for a single, calm, non-branded
+     dark-grey border instead, independent of whatever the interactive
+     accent currently is. None of the existing warm-toned neutrals
+     (--color-text, --color-text-secondary) sit close to the requested
+     "dark grey": they're both warm-tinted, and --color-text in
+     particular is much closer to black (~9% lightness) than a genuine
+     mid-dark grey. #3a3a3a is a true neutral (zero saturation) at ~23%
+     lightness, and clears the WCAG 3:1 UI-component minimum by a wide
+     margin against both the input's own white surface (11.4:1) and the
+     warm card background around it (10.4:1). */
+  --color-input-focus: #3a3a3a;
+
+  /* The CSS-only brand mark (see Brand.tsx) keeps its own dedicated soft
+     tile token, but --color-brand-mark itself is now an explicit alias of
+     --color-accent-vivid -- owner instruction: the logo mark should match
+     the same vivid pink used for "choose a file" and the active-nav
+     state, not have its own separate, darker shade. Contrast against the
+     mark's own soft tile is ~4.89:1 (clears the 4.5:1 AA minimum with a
+     real margin -- this pairing is exactly what pushed
+     --color-accent-vivid from its initial L45 down to L43, see that
+     token's own comment) -- if the tile ever needs to change
+     independently, re-check this pairing. --color-brand-mark-soft stays
+     its own value (not an accent-soft alias) per the "semantically
+     independent" token strategy. The wordmark text stays on --color-text
+     (dark neutral,
+     untouched) -- only the mark itself follows the accent. */
+  --color-brand-mark: var(--color-accent-vivid);
+  --color-brand-mark-soft: #fcedf4;
+
+  --color-status-queued-bg: #eeeae1;
+  --color-status-queued-fg: #5c5544;
+  --color-status-processing-bg: #e4ecfb;
+  --color-status-processing-fg: #2452a6;
+  --color-status-completed-bg: #e3f3e6;
+  --color-status-completed-fg: #1f7a3d;
+  --color-status-failed-bg: #fbeae6;
+  --color-status-failed-fg: #b23a1f;
+
+  --color-danger: #b23a1f;
+  --color-danger-bg: #fbeae6;
+
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", ui-sans-serif, Roboto, "Helvetica Neue",
+    Arial, sans-serif;
+  --font-serif-reading: ui-serif, Georgia, "Iowan Old Style", "Palatino Linotype", "Times New Roman", serif;
+
+  /* Density recalibration pass: at true 100% browser zoom, the previous
+     scale (built on a 4px/8px rhythm) read as visibly oversized compared
+     with the owner's 85%-zoom reference. The first density pass (below,
+     historically) hand-picked round values roughly 0.80-0.88x the
+     original. Owner review of that pass: improved, but true 100% still
+     read oversized -- closer to a 75%-zoom feel was the target. This
+     second pass recomputes each step directly off the ORIGINAL baseline
+     (not off the already-once-reduced numbers, which would compound
+     rounding into odd fractions) at almost exactly 0.75x, landing on
+     clean values that stay on the same rem-multiple authoring
+     convention. --space-1 and --space-2 are the exception, held gentler
+     (unchanged from the first pass) since they're already
+     hairline-adjacent gap units -- shrinking a 4px or 6px gap further
+     risks disappearing rather than reading as "denser". This single
+     token change is still the highest-leverage lever in the app: every
+     component reads padding/margin/gap through these tokens, not literal
+     px. */
+  --space-1: 0.25rem;
+  --space-2: 0.375rem;
+  --space-3: 0.5625rem;
+  --space-4: 0.75rem;
+  --space-5: 1.125rem;
+  --space-6: 1.5rem;
+  --space-7: 1.875rem;
+  --space-8: 2.25rem;
+  --space-9: 2.625rem;
+  --space-10: 3rem;
+
+  /* Same reasoning, same recompute-off-the-original approach: radius
+     tightened further than the first pass (7/12/20 -> 6/10/16 ->
+     5/9/14), both for ratio and because a visibly sharper corner directly
+     supports the "denser, sharper, more desktop-product-like" character
+     this pass is aiming for. --radius-pill is untouched -- "fully
+     rounded" is a ratio, not an absolute size, so it never needs
+     rescaling. */
+  --radius-sm: 5px;
+  --radius-md: 9px;
+  --radius-lg: 14px;
+  --radius-pill: 999px;
+
+  --shadow-sm: 0 1px 2px rgba(26, 24, 21, 0.05);
+  --shadow-md: 0 6px 20px rgba(26, 24, 21, 0.07);
+  --shadow-lg: 0 16px 40px rgba(26, 24, 21, 0.12);
+
+  /* 46rem (original) -> 42rem (first pass) -> 38rem (this pass, 608px):
+     a more conservative ratio (~0.83x the first pass's value, not another
+     full 0.75x cut) than the spacing/type scale -- over-narrowing this
+     column doesn't read as "denser," just letterboxed, and the owner's
+     feedback was about padding/height/type feeling large, not the card
+     being too wide. */
+  --max-width-content: 38rem;
+  --max-width-workspace: 1280px;
+
+  /* Shared by the two desktop header regions that must line up on one row:
+     Sidebar's brand area (Sidebar.module.css's .brandRow) and the main
+     content's page header (PageLayout.module.css's .header). Both consume
+     this same value as an exact `height`/`min-height`, with
+     `display: flex; align-items: center` centering their own content
+     inside it -- structural alignment guaranteed by two boxes sharing one
+     number, not by independently tuned padding trying to approximate the
+     same result. Desktop-only on purpose: on mobile the two regions stack
+     vertically instead of sitting side-by-side (AppShell's mobileTopBar
+     above the page's own content), so there's no "same row" to align, and
+     PageLayout's own mobile breakpoint keeps its own smaller literal
+     rather than being tied to this token. */
+  --app-header-height: 44px;
+
+  --transition-fast: 120ms ease;
+  --transition-base: 200ms ease;
+
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+a {
+  color: inherit;
+}
+
+button {
+  font-family: inherit;
+}
+
+::selection {
+  background: var(--color-accent-soft);
+  color: var(--color-accent-vivid);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

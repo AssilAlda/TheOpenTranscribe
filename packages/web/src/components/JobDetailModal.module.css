@@ -1,0 +1,93 @@
+.dialog {
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  /* Cross-page density audit: still at the first pass's size (800/720)
+     while the rest of the app moved on to a further ~0.9x cut in the
+     second pass -- tightened to match rather than left at the old scale. */
+  width: min(92vw, 720px);
+  max-height: min(88vh, 650px);
+  color: var(--color-text);
+  background: var(--color-surface);
+}
+
+/* A closed native <dialog> is `display: none` by the UA stylesheet, with
+   zero layout space and no ::backdrop -- that's the entire mechanism that
+   makes it invisible when closed. An unconditional `display: flex` on
+   `.dialog` above overrode that default for the closed state too, which is
+   what left a large empty white panel (this rule's flex layout, applied to
+   an otherwise-empty box) visible on the page even with no job selected.
+   Scoping the flex layout to the `[open]` attribute -- the same attribute
+   `.showModal()`/`.close()` toggle -- means the layout only ever applies
+   while the dialog is actually open, and the UA default governs the rest. */
+.dialog[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+.dialog::backdrop {
+  background: rgba(26, 24, 21, 0.45);
+}
+
+.chrome {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: flex-end;
+  padding: var(--space-3) var(--space-3) 0;
+}
+
+.closeButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-pill);
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.closeButton:hover {
+  background: var(--color-surface-sunken);
+  color: var(--color-text);
+}
+
+.body {
+  /* flex: 1 (shorthand for flex-basis: 0%) was the actual bug: <dialog> has
+     no explicit height here, only max-height, so the browser must compute
+     its own auto height from its flex children. A 0%-basis child combined
+     with min-height: 0 contributes ZERO to that auto-height calculation,
+     so the dialog collapsed to just .chrome's height regardless of the
+     body's real content -- wide (from `width`), but visually empty except
+     for the close button. `flex-basis: auto` makes the item's hypothetical
+     size based on its actual content instead, so the dialog sizes itself
+     to fit real content (up to max-height, beyond which min-height: 0 +
+     overflow-y: auto correctly lets the body scroll internally). This is a
+     well-documented flexbox interaction (flex-basis: 0% + min-height: 0
+     inside an auto-height column flex container) -- could not be visually
+     re-confirmed in a real browser (no browser access in this
+     environment), so please double-check this specific fix visually. */
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--space-3) var(--space-7) var(--space-7);
+}
+
+@media (max-width: 560px) {
+  .dialog {
+    width: 100vw;
+    max-width: 100vw;
+    height: 100vh;
+    max-height: 100vh;
+    border-radius: 0;
+    margin: 0;
+  }
+
+  .body {
+    padding: var(--space-2) var(--space-4) var(--space-6);
+  }
+}

@@ -1,0 +1,23 @@
+.container {
+  /* Wide enough for the card-grid sections to breathe (room for a second
+     card per row later) without becoming a full-canvas page like
+     Transcribed Files -- still a focused settings surface. Anchored to the
+     shared left content edge, not centered in the canvas. Cross-page
+     density audit: this had been left at the first density pass's value
+     (42rem) while --max-width-content moved on to 38rem in the second
+     pass -- now reuses that shared token directly instead of a second,
+     independently-drifting literal that happens to want the same number. */
+  max-width: var(--max-width-content);
+}
+
+.subtitle {
+  margin: 0 0 var(--space-6);
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+}
+
+@media (max-width: 560px) {
+  .subtitle {
+    margin-bottom: var(--space-5);
+  }
+}

@@ -1,0 +1,65 @@
+.page {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Part of the application shell, not a floating card -- flush against the
+   canvas edges, only a hairline border to separate it from the content
+   below. `height` (not `min-height`) is the shared `--app-header-height`
+   token also consumed by Sidebar's own brand row (see
+   Sidebar.module.css) -- using the same CSS property (not `height` on
+   one side and `min-height` on the other) keeps both boxes' sizing
+   behavior identical in kind, not just equal in the common case. */
+.header {
+  display: flex;
+  align-items: center;
+  height: var(--app-header-height);
+  padding: 0 var(--space-7);
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* `line-height: 1` is deliberate, not incidental: without it this
+   inherits the app's base 1.5 line-height, which adds ~half-leading
+   above and below the glyphs inside the flex-centered box. Flexbox
+   centers the LINE BOX, not the glyphs themselves -- at 1.5 line-height
+   the line box is visibly taller than the text, and centering that taller
+   box can read as "the text sits a little high/low" even though the box
+   itself is correctly centered. Tightening to 1 makes the line box
+   hug the glyphs, so centering the box and centering the visible text
+   become the same thing. Brand.module.css's `.name` gets the identical
+   treatment for the same reason -- see its own comment. */
+.title {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 650;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: var(--color-text);
+  outline: none;
+}
+
+/* The shared left content inset: every page's content starts at this same
+   horizontal offset, deliberately matching the header's own padding so the
+   header title and the content below it line up on one left edge. */
+.content {
+  padding: var(--space-7);
+}
+
+@media (max-width: 560px) {
+  .header {
+    padding: 0 var(--space-4);
+    /* Must also be `height`, not `min-height` -- the base rule above now
+       sets a fixed `height: var(--app-header-height)` (44px), and a fixed
+       `height` always wins over `min-height`, so `min-height: 40px` here
+       would silently have zero effect. */
+    height: 40px;
+  }
+
+  .title {
+    font-size: 0.8125rem;
+  }
+
+  .content {
+    padding: var(--space-5) var(--space-4);
+  }
+}
