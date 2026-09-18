@@ -1,11 +1,13 @@
 import { spawn } from "node:child_process";
 
+import { StreamRedactor } from "./streamRedactor.js";
+
 const MAX_STDERR_TAIL_CHARS = 4000;
 
 export interface SpawnCaptureResult {
   /** Process exit code, or null if the process was killed by a signal or never started. */
   code: number | null;
-  /** Last MAX_STDERR_TAIL_CHARS characters written to stderr, trimmed. */
+  /** Last MAX_STDERR_TAIL_CHARS characters written to stderr, trimmed, already redacted. */
   stderrTail: string;
 }
 
@@ -24,12 +26,27 @@ export interface SpawnCaptureResult {
  * it's how the runner's graceful-shutdown path (a second explicit
  * SIGINT/SIGTERM from the operator) can ask an in-flight subprocess to stop
  * instead of orphaning it. See index.ts.
+ *
+ * `knownSecrets` (Owner Decision 10 §10): the credential(s) already resolved
+ * in-memory for this job's spawn, redacted by exact value ahead of generic
+ * pattern matching. Never persisted/logged/cached by this function -- only
+ * used transiently to build the redaction pass for this one call.
+ *
+ * Owner Decision 10, stream-safe redaction (blocker B1): stderr is fed
+ * through a single StreamRedactor (see streamRedactor.ts) shared by both
+ * sinks below -- the live relay to this process's own stderr, and the
+ * bounded tail later persisted into jobs.error_message. There is
+ * deliberately no "raw to logs, redacted to DB" split (Decision 10 §9), and
+ * no per-chunk-only redaction that could let a credential split across a
+ * chunk boundary slip through unredacted -- see streamRedactor.ts for why
+ * line-buffering closes that gap rather than just narrowing it.
  */
 export function spawnCapture(
   command: string,
   args: string[],
   env: NodeJS.ProcessEnv,
   signal?: AbortSignal,
+  knownSecrets: readonly string[] = [],
 ): Promise<SpawnCaptureResult> {
   return new Promise((resolvePromise) => {
     let settled = false;
@@ -41,14 +58,20 @@ export function spawnCapture(
 
     const child = spawn(command, args, { env, stdio: ["ignore", "pipe", "pipe"], signal });
 
+    const redactor = new StreamRedactor(knownSecrets);
     let stderrBuffer = "";
-    child.stdout?.on("data", (chunk: Buffer) => process.stdout.write(chunk));
-    child.stderr?.on("data", (chunk: Buffer) => {
-      process.stderr.write(chunk);
-      stderrBuffer += chunk.toString("utf-8");
+    const appendSafe = (safe: string) => {
+      if (!safe) return;
+      process.stderr.write(safe);
+      stderrBuffer += safe;
       if (stderrBuffer.length > MAX_STDERR_TAIL_CHARS) {
         stderrBuffer = stderrBuffer.slice(-MAX_STDERR_TAIL_CHARS);
       }
+    };
+
+    child.stdout?.on("data", (chunk: Buffer) => process.stdout.write(chunk));
+    child.stderr?.on("data", (chunk: Buffer) => {
+      appendSafe(redactor.push(chunk.toString("utf-8")));
     });
 
     child.on("error", (err) => {
@@ -60,6 +83,7 @@ export function spawnCapture(
     });
 
     child.on("close", (code) => {
+      appendSafe(redactor.flush());
       settle({ code, stderrTail: stderrBuffer.trim() });
     });
   });

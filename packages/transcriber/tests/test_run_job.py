@@ -175,3 +175,44 @@ def test_parse_args_requires_input_and_output():
     assert args.input == "/a/b.mp3"
     assert args.output == "/a/b.txt"
     assert args.language == "de"
+
+
+# Owner Decision 10 (Phase 7 secret redaction): run_job.py must never print a
+# raw stringified provider exception to stderr -- only a safe, non-secret
+# diagnostic (exception type, and a status code when the exception exposes
+# one as a plain attribute).
+
+
+def test_safe_failure_message_omits_raw_exception_text():
+    exc = RuntimeError("Authorization: Bearer sk-should-never-appear-anywhere")
+    message = run_job._safe_failure_message(exc)
+
+    assert "sk-should-never-appear-anywhere" not in message
+    assert "Bearer" not in message
+    assert "RuntimeError" in message
+
+
+def test_safe_failure_message_includes_status_code_when_present():
+    class FakeApiError(Exception):
+        status_code = 429
+
+    message = run_job._safe_failure_message(FakeApiError("rate limited, key sk-secret-value"))
+
+    assert "sk-secret-value" not in message
+    assert "429" in message
+    assert "FakeApiError" in message
+
+
+def test_run_failure_path_never_prints_raw_exception_text_to_stderr(monkeypatch, tmp_path, capsys):
+    def failing_transcribe_media(media_path, language, provider):
+        raise RuntimeError("upstream said: api_key=sk-leaked-value-should-not-appear")
+
+    monkeypatch.setattr(run_job, "OpenAIProvider", lambda: FakeProvider())
+    monkeypatch.setattr(run_job, "transcribe_media", failing_transcribe_media)
+
+    exit_code = run_job.run(_media_file(tmp_path), tmp_path / "out.txt", None)
+    captured = capsys.readouterr()
+
+    assert exit_code == 1
+    assert "sk-leaked-value-should-not-appear" not in captured.err
+    assert "Transcription failed: RuntimeError" in captured.err

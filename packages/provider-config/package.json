@@ -1,0 +1,20 @@
+{
+  "name": "@theopentranscribe/provider-config",
+  "version": "0.1.0",
+  "description": "Phase 7: shared server-only managed provider-configuration primitives (env > managed > unconfigured resolution, atomic managed-config persistence) for the OpenAI API CONFIGURATION-auth credential. Consumed by packages/web (Configure/Replace/Remove + status) and packages/runner (per-job fresh credential resolution). Owns CONFIGURATION-auth state only -- does not own any future CONNECTED_ACCOUNT/OAuth lifecycle.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "private": true,
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^26.6.0",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.1"
+  }
+}

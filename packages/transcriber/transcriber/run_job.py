@@ -64,6 +64,28 @@ def _write_output_atomically(text: str, output_path: Path) -> None:
         raise
 
 
+def _safe_failure_message(exc: BaseException) -> str:
+    """A safe, non-secret diagnostic for an unexpected transcription failure.
+
+    Owner Decision 10 (Phase 7 secret redaction): never stringify the raw
+    exception directly. A provider SDK exception's own `str(exc)` can embed
+    request/response details (e.g. headers, request bodies) this module has
+    no way to fully audit for secret material — so only the exception's
+    type name and, when present as a plain safe attribute (common on
+    httpx/openai SDK exceptions), its HTTP status code are surfaced. Both
+    are safe, non-secret diagnostic categories on their own. This text
+    reaches the Phase 4 runner's stderr capture, which applies its own
+    centralized redaction as a further backstop (packages/runner/src/
+    spawnCapture.ts) — this is the first, source-level layer, not the only
+    one.
+    """
+    exc_type = type(exc).__name__
+    status_code = getattr(exc, "status_code", None)
+    if status_code is not None:
+        return f"Transcription failed: {exc_type} (status {status_code})"
+    return f"Transcription failed: {exc_type}"
+
+
 def run(input_path: Path, output_path: Path, language: str | None) -> int:
     if not os.getenv("OPENAI_API_KEY"):
         print("OPENAI_API_KEY is not set.", file=sys.stderr)
@@ -84,7 +106,7 @@ def run(input_path: Path, output_path: Path, language: str | None) -> int:
         text = transcribe_media(input_path, normalized_language, provider)
         _write_output_atomically(text, output_path)
     except Exception as exc:  # noqa: BLE001 - single top-level failure boundary by design
-        print(f"Transcription failed: {exc}", file=sys.stderr)
+        print(_safe_failure_message(exc), file=sys.stderr)
         return 1
 
     return 0

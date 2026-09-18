@@ -6,13 +6,18 @@
   "main": "./src/index.ts",
   "private": true,
   "scripts": {
+    "build:provider-config": "npm --prefix ../provider-config install --no-audit --no-fund --include=dev && npm --prefix ../provider-config run build",
+    "prestart": "npm run build:provider-config",
     "start": "tsx src/index.ts",
+    "pretest": "npm run build:provider-config",
     "test": "vitest run",
+    "pretypecheck": "npm run build:provider-config",
     "typecheck": "tsc --noEmit"
   },
   "license": "MIT",
   "dependencies": {
-    "@theopentranscribe/db": "file:../db"
+    "@theopentranscribe/db": "file:../db",
+    "@theopentranscribe/provider-config": "file:../provider-config"
   },
   "devDependencies": {
     "@types/node": "^26.6.0",

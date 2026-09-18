@@ -4,16 +4,23 @@
   "description": "Phase 5 Web API (Next.js Route Handlers) + Phase 6 dashboard UI: upload handling + validation, job creation, job/history queries, serving results, and a dashboard for uploading, tracking, reading, and exporting transcripts.",
   "private": true,
   "scripts": {
+    "build:provider-config": "npm --prefix ../provider-config install --no-audit --no-fund --include=dev && npm --prefix ../provider-config run build",
+    "predev": "npm run build:provider-config",
     "dev": "next dev",
+    "prebuild": "npm run build:provider-config",
     "build": "next build",
+    "prestart": "npm run build:provider-config",
     "start": "next start",
+    "pretest": "npm run build:provider-config",
     "test": "vitest run",
+    "pretypecheck": "npm run build:provider-config",
     "typecheck": "tsc --noEmit"
   },
   "license": "MIT",
   "dependencies": {
     "@fastify/busboy": "3.2.2",
     "@theopentranscribe/db": "file:../db",
+    "@theopentranscribe/provider-config": "file:../provider-config",
     "fontkit": "^2.0.4",
     "next": "^16.3.5",
     "pdfkit": "^0.20.2",

@@ -1,23 +1,27 @@
 "use client";
 
+import { useState } from "react";
+
+import { useProviderStatus } from "@/hooks/useProviderStatus";
+
+import { OpenAICredentialModal, type CredentialModalMode } from "./OpenAICredentialModal";
 import styles from "./ProviderSettings.module.css";
 
 /**
- * Phase 6: presentation only, for both sections. No fetch/POST of any kind
- * is wired to this component, no credential is ever accepted or stored.
+ * Phase 7: the "Providers" section's OpenAI API card is now genuinely
+ * functional (Owner Decisions 2, 4, 5) -- Configure/Replace open a
+ * dedicated native <dialog> (OpenAICredentialModal), Remove is an inline
+ * explicit confirmation, and every displayed state comes directly from
+ * GET /api/provider/openai's safe status DTO (never invented client-side).
  *
- * Two authentication *methods* are represented -- connected account/
- * subscription vs. direct API key -- because TheOpenTranscribe's provider
- * layer is not inherently API-key-only: a provider may eventually support
- * either method (or local execution) where it actually makes sense for
- * that provider's transcription workflow. Phase 6 only shows what's
- * actually true today: neither method is functional yet. Secure credential
- * persistence and connected-account authentication are a separate,
- * not-yet-approved Phase 7 decision (see docs/ARCHITECTURE.md).
+ * "Connected accounts" remains presentation-only, unchanged from Phase 6:
+ * connected-account/OAuth transcription authorization is not officially
+ * supportable today (see the Phase 7 investigation's OpenAI research) --
+ * this is the intentionally-inert `openai_codex` / CONNECTED_ACCOUNT
+ * extension seam, not unfinished Phase 7 work.
  */
 
 type ConnectedAccountStatus = "connected" | "not_connected" | "unavailable";
-type ApiKeyProviderStatus = "configured" | "missing_key" | "environment_configured" | "unavailable";
 
 const CONNECTED_ACCOUNT_STATUS_LABEL: Record<ConnectedAccountStatus, string> = {
   connected: "Connected",
@@ -25,14 +29,7 @@ const CONNECTED_ACCOUNT_STATUS_LABEL: Record<ConnectedAccountStatus, string> = {
   unavailable: "Not available yet",
 };
 
-const API_KEY_STATUS_LABEL: Record<ApiKeyProviderStatus, string> = {
-  configured: "Configured",
-  missing_key: "Missing key",
-  environment_configured: "Environment configuration required",
-  unavailable: "Not available yet",
-};
-
-function StatusBadge({ label, tone }: { label: string; tone: "neutral" | "info" }) {
+function StatusBadge({ label, tone }: { label: string; tone: "neutral" | "info" | "success" | "danger" }) {
   return <span className={`${styles.statusBadge} ${styles[tone] ?? ""}`}>{label}</span>;
 }
 
@@ -64,31 +61,141 @@ function ConnectedAccountCard({
   );
 }
 
-function ApiKeyProviderCard({
-  name,
-  envVar,
-  status,
-}: {
-  name: string;
-  envVar: string;
-  status: ApiKeyProviderStatus;
-}) {
+function OpenAIApiCard() {
+  const { status, loading, error, refresh } = useProviderStatus();
+  const [modalMode, setModalMode] = useState<CredentialModalMode | null>(null);
+  const [confirmingRemove, setConfirmingRemove] = useState(false);
+  const [removing, setRemoving] = useState(false);
+  const [removeError, setRemoveError] = useState<string | null>(null);
+
+  const envVar = "OPENAI_API_KEY";
+
+  let badgeLabel = "Loading…";
+  let badgeTone: "neutral" | "info" | "success" | "danger" = "neutral";
+  let bodyText: React.ReactNode = "Checking current configuration…";
+  let primaryAction: React.ReactNode = null;
+
+  if (error) {
+    badgeLabel = "Status unavailable";
+    badgeTone = "danger";
+    bodyText = error;
+  } else if (status) {
+    if (status.source === "environment") {
+      badgeLabel = "Environment configured";
+      badgeTone = "info";
+      bodyText = (
+        <>
+          Set via <code className={styles.code}>{envVar}</code> in the server environment. This value is
+          externally managed and can&rsquo;t be changed from this page.
+        </>
+      );
+      primaryAction = (
+        <button type="button" className={styles.actionButton} disabled title="Environment-managed -- locked">
+          Configured
+        </button>
+      );
+    } else if (status.source === "managed" && status.configured) {
+      badgeLabel = "Configured";
+      badgeTone = "success";
+      bodyText = "A managed API key is saved on this server.";
+      primaryAction = confirmingRemove ? (
+        <div className={styles.confirmRow}>
+          <span className={styles.confirmText}>Remove the saved key?</span>
+          <button
+            type="button"
+            className={styles.confirmButton}
+            disabled={removing}
+            onClick={async () => {
+              setRemoving(true);
+              setRemoveError(null);
+              try {
+                const res = await fetch("/api/provider/openai", { method: "DELETE" });
+                if (!res.ok) {
+                  setRemoveError("Couldn't remove the saved key. Please try again.");
+                } else {
+                  await refresh();
+                }
+              } catch {
+                setRemoveError("Couldn't reach TheOpenTranscribe to remove the key.");
+              } finally {
+                setRemoving(false);
+                setConfirmingRemove(false);
+              }
+            }}
+          >
+            {removing ? "Removing…" : "Confirm"}
+          </button>
+          <button
+            type="button"
+            className={styles.cancelSmallButton}
+            disabled={removing}
+            onClick={() => setConfirmingRemove(false)}
+          >
+            Cancel
+          </button>
+        </div>
+      ) : (
+        <div className={styles.actionRow}>
+          <button type="button" className={styles.actionButton} onClick={() => setModalMode("replace")}>
+            Replace
+          </button>
+          <button
+            type="button"
+            className={styles.actionButtonSecondary}
+            onClick={() => setConfirmingRemove(true)}
+          >
+            Remove
+          </button>
+        </div>
+      );
+    } else if (status.configError) {
+      // Blockers B2/B4: driven by the safe `configError` sibling field, not
+      // by a fourth `source` value -- this status is still `source:
+      // "unconfigured"`, so this branch must be checked before the final
+      // plain-unconfigured `else` below.
+      badgeLabel = "Configuration error";
+      badgeTone = "danger";
+      bodyText = "The saved configuration couldn't be read. Configuring a new key will replace it.";
+      primaryAction = (
+        <button type="button" className={styles.actionButton} onClick={() => setModalMode("configure")}>
+          Configure
+        </button>
+      );
+    } else {
+      badgeLabel = "Not configured";
+      badgeTone = "neutral";
+      bodyText = (
+        <>
+          Set <code className={styles.code}>{envVar}</code> in the server environment, or configure a
+          managed key below.
+        </>
+      );
+      primaryAction = (
+        <button type="button" className={styles.actionButton} onClick={() => setModalMode("configure")}>
+          Configure
+        </button>
+      );
+    }
+  }
+
   return (
     <div className={styles.card}>
       <div className={styles.cardHeader}>
-        <span className={styles.cardIdentity}>{name}</span>
-        <StatusBadge label={API_KEY_STATUS_LABEL[status]} tone="info" />
+        <span className={styles.cardIdentity}>OpenAI API</span>
+        <StatusBadge label={badgeLabel} tone={badgeTone} />
       </div>
       <p className={styles.cardMethod}>Credential method: API key</p>
-      <p className={styles.cardBody}>
-        Set <code className={styles.code}>{envVar}</code> in the server environment running
-        TheOpenTranscribe. In-app credential storage isn&rsquo;t enabled yet in this version.
-      </p>
-      <div className={styles.cardAction}>
-        <button type="button" className={styles.actionButton} disabled>
-          Configure
-        </button>
-      </div>
+      <p className={styles.cardBody}>{bodyText}</p>
+      {removeError && <p className={styles.inlineError}>{removeError}</p>}
+      <div className={styles.cardAction}>{loading && !status ? null : primaryAction}</div>
+
+      <OpenAICredentialModal
+        mode={modalMode}
+        onClose={() => setModalMode(null)}
+        onSettled={() => {
+          void refresh();
+        }}
+      />
     </div>
   );
 }
@@ -122,7 +229,7 @@ export function ProviderSettings() {
         </div>
 
         <div className={styles.cardGrid}>
-          <ApiKeyProviderCard name="OpenAI API" envVar="OPENAI_API_KEY" status="environment_configured" />
+          <OpenAIApiCard />
         </div>
       </section>
     </div>

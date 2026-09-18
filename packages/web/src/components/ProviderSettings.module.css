@@ -84,6 +84,16 @@
   color: var(--color-status-processing-fg);
 }
 
+.statusBadge.success {
+  background: var(--color-status-completed-bg);
+  color: var(--color-status-completed-fg);
+}
+
+.statusBadge.danger {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+}
+
 .cardMethod {
   margin: 0;
   font-size: 0.6875rem;
@@ -112,16 +122,84 @@
   margin-top: var(--space-1);
 }
 
+.actionRow {
+  display: flex;
+  gap: var(--space-2);
+}
+
 .actionButton {
   padding: var(--space-2) var(--space-5);
   border-radius: var(--radius-pill);
+  border: 1px solid transparent;
+  background: var(--color-accent);
+  color: var(--color-accent-contrast);
+  font-size: 0.75rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.actionButton:disabled {
   border: 1px solid var(--color-border-strong);
   background: var(--color-surface-sunken);
   color: var(--color-text-muted);
-  font-size: 0.75rem;
-  font-weight: 600;
   opacity: 0.75;
   cursor: not-allowed;
+}
+
+.actionButtonSecondary {
+  padding: var(--space-2) var(--space-5);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.confirmRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.confirmText {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+}
+
+.confirmButton {
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-pill);
+  border: 1px solid transparent;
+  background: var(--color-danger);
+  color: var(--color-surface);
+  font-size: 0.75rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.confirmButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.cancelSmallButton {
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.inlineError {
+  margin: 0;
+  font-size: 0.6875rem;
+  color: var(--color-danger);
 }
 
 @media (max-width: 560px) {
