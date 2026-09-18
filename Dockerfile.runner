@@ -1,0 +1,98 @@
+# syntax=docker/dockerfile:1
+#
+# packages/runner is a standalone npm package (no workspaces, `type: module`,
+# no `build` script -- it runs directly via `tsx`) depending on packages/db
+# and packages/provider-config via `file:../x` specifiers, which npm
+# materializes as *relative symlinks* into node_modules (verified:
+# node_modules/@theopentranscribe/db -> ../../../db). Those symlinks only
+# resolve if packages/db and packages/provider-config physically exist at
+# the same relative sibling paths in the final image -- so this file keeps
+# all three packages as real directories under a shared /app/packages/
+# parent, rather than flattening/copying only compiled output.
+#
+# The runner invokes the Python transcriber via child_process.spawn (a
+# same-filesystem subprocess call, per the locked architecture -- not
+# HTTP), so this single image must contain Node (for tsx) *and* a Python
+# 3.13 interpreter with theopentranscribe installed *and* ffmpeg/ffprobe on
+# PATH. Splitting runner/transcriber into separate containers would require
+# turning that subprocess call into a network call, which the architecture
+# does not do.
+
+FROM python:3.13-slim-bookworm AS base
+# python:3.13-slim-bookworm pins exact Python 3.13 via the official image
+# tag -- Debian bookworm's own apt repos do not ship 3.13, so this must not
+# be obtained via a bare `apt-get install python3`. Node 22 comes from
+# NodeSource's official setup script, not `apt-get install nodejs` --
+# bookworm's own nodejs apt package is a much older major version.
+# build-essential (make/gcc/g++) is required at image-build time: no
+# better-sqlite3 prebuild matched linux/arm64 + this Node/glibc combination
+# during testing, so `npm ci` falls back to compiling its native binding
+# from source via node-gyp.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      ca-certificates curl gnupg ffmpeg build-essential \
+    && curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && apt-get install -y --no-install-recommends nodejs \
+    && rm -rf /var/lib/apt/lists/*
+
+FROM base AS runtime
+WORKDIR /app
+
+COPY packages/db packages/db/
+# packages/db's `prepare` npm lifecycle hook runs `npm run build`
+# automatically as part of `npm ci` -- no separate build step needed.
+RUN npm --prefix packages/db ci
+
+COPY packages/provider-config packages/provider-config/
+# provider-config has no `prepare` hook and its own TypeScript toolchain is
+# a devDependency, so --include=dev is required here -- mirrors the
+# build:provider-config script both packages/runner and packages/web define.
+RUN npm --prefix packages/provider-config ci --include=dev \
+    && npm --prefix packages/provider-config run build
+
+COPY packages/runner packages/runner/
+# No build step: packages/runner has no `build` script and runs directly
+# via tsx (its main is ./src/index.ts) -- do not prune its
+# devDependencies afterward, since tsx itself is required at runtime.
+RUN npm --prefix packages/runner ci
+
+# packages/db and packages/provider-config's node_modules are intentionally
+# not pruned here: packages/db defines a `prepare` lifecycle hook, which
+# `npm prune` re-triggers as part of its own tree reification -- after
+# devDependencies (including typescript) have already been removed in that
+# same operation, so the hook then fails with "tsc: not found". Both
+# packages are small enough that shipping their devDependencies unused in
+# the final image is an acceptable, simple tradeoff (packages/runner's own
+# node_modules is never pruned either, since tsx is a devDependency
+# required at runtime).
+
+# Immutable install: a normal (non-editable) install into a dedicated venv,
+# not `pip install -e` -- the production container should not depend on
+# editable-source semantics. Local dev's `.venv` + `pip install -e` workflow
+# is unchanged.
+COPY packages/transcriber packages/transcriber/
+RUN python3 -m venv /opt/transcriber-venv \
+    && /opt/transcriber-venv/bin/pip install --no-cache-dir /app/packages/transcriber
+
+COPY docker/healthcheck-runner.sh /usr/local/bin/healthcheck-runner.sh
+RUN chmod +x /usr/local/bin/healthcheck-runner.sh
+
+# Fixed non-root UID:GID (10001:10001), identical to Dockerfile.web -- the
+# runner must read the Phase 7 managed provider-config file (0600/0700
+# perms) that the web container writes; sharing one UID across both images
+# preserves those permissions unweakened rather than requiring a
+# world-readable fallback.
+RUN groupadd -g 10001 app && useradd -u 10001 -g app -M -s /usr/sbin/nologin app
+RUN mkdir -p /data /config && chown -R app:app /data /config /app
+USER app
+
+ENV TRANSCRIBER_PYTHON_BIN=/opt/transcriber-venv/bin/python
+WORKDIR /app/packages/runner
+
+HEALTHCHECK --interval=15s --timeout=5s --retries=3 --start-period=10s \
+  CMD ["/usr/local/bin/healthcheck-runner.sh"]
+
+# Invoke the already-installed local binary directly -- not `npx tsx`
+# (which can attempt a registry fetch) and not `npm run start` (whose
+# `prestart` hook would re-run the provider-config install/build on every
+# container start even though it's already built into this image).
+CMD ["node_modules/.bin/tsx", "src/index.ts"]

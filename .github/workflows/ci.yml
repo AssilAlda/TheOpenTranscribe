@@ -1,0 +1,198 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  transcriber-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - name: Install package
+        working-directory: packages/transcriber
+        run: pip install -e ".[dev]"
+      - name: Test
+        working-directory: packages/transcriber
+        run: pytest
+
+  contract-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install package
+        working-directory: packages/contract/python
+        run: pip install -e ".[dev]"
+      - name: Test
+        working-directory: packages/contract/python
+        run: pytest
+
+  db-typecheck-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: packages/db/package-lock.json
+      # `prepare` lifecycle hook runs `npm run build` automatically.
+      - name: Install (builds via prepare hook)
+        working-directory: packages/db
+        run: npm ci
+      - name: Typecheck
+        working-directory: packages/db
+        run: npm run typecheck
+      - name: Test
+        working-directory: packages/db
+        run: npm test
+
+  provider-config-typecheck-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: packages/provider-config/package-lock.json
+      - name: Install
+        working-directory: packages/provider-config
+        run: npm ci --include=dev
+      - name: Build
+        working-directory: packages/provider-config
+        run: npm run build
+      - name: Typecheck
+        working-directory: packages/provider-config
+        run: npm run typecheck
+      - name: Test
+        working-directory: packages/provider-config
+        run: npm test
+
+  runner-typecheck-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: |
+            packages/db/package-lock.json
+            packages/runner/package-lock.json
+      # packages/runner is a `file:../db` sibling dependency -- must be
+      # built before packages/runner's own install resolves it.
+      - name: Install packages/db (dependency, builds via prepare hook)
+        working-directory: packages/db
+        run: npm ci
+      # runner's pretypecheck/pretest hooks run build:provider-config
+      # automatically -- no separate provider-config step needed here.
+      - name: Install packages/runner
+        working-directory: packages/runner
+        run: npm ci
+      - name: Typecheck
+        working-directory: packages/runner
+        run: npm run typecheck
+      - name: Test
+        working-directory: packages/runner
+        run: npm test
+
+  web-typecheck-test-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: |
+            packages/db/package-lock.json
+            packages/web/package-lock.json
+      - name: Install packages/db (dependency, builds via prepare hook)
+        working-directory: packages/db
+        run: npm ci
+      # web's pretypecheck/pretest/prebuild hooks run build:provider-config
+      # automatically -- no separate provider-config step needed here.
+      - name: Install packages/web
+        working-directory: packages/web
+        run: npm ci
+      - name: Typecheck
+        working-directory: packages/web
+        run: npm run typecheck
+      - name: Test
+        working-directory: packages/web
+        run: npm test
+      - name: Build
+        working-directory: packages/web
+        run: npm run build
+
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      # --omit=dev naturally excludes the already-known, already-accepted
+      # moderate drizzle-kit/esbuild findings in packages/db (they're
+      # dev-only) without needing a blanket suppression -- a genuinely new
+      # high/critical finding in any package's *production* dependencies
+      # still fails this job.
+      - name: npm audit -- db
+        working-directory: packages/db
+        run: npm audit --omit=dev --audit-level=high
+      - name: npm audit -- provider-config
+        working-directory: packages/provider-config
+        run: npm audit --omit=dev --audit-level=high
+      - name: npm audit -- runner
+        working-directory: packages/runner
+        run: npm audit --omit=dev --audit-level=high
+      - name: npm audit -- web
+        working-directory: packages/web
+        run: npm audit --omit=dev --audit-level=high
+      # pip itself is upgraded first -- an outdated pip bundled by the
+      # runner's Python install otherwise shows up as a perpetual finding
+      # unrelated to this project's own declared dependencies.
+      - name: pip-audit -- transcriber
+        working-directory: packages/transcriber
+        run: |
+          pip install --upgrade pip
+          pip install -e ".[dev]" pip-audit
+          pip-audit
+      - name: pip-audit -- contract
+        working-directory: packages/contract/python
+        run: |
+          pip install --upgrade pip
+          pip install -e ".[dev]" pip-audit
+          pip-audit
+
+  docker-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build web image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.web
+          push: false
+      - name: Build runner image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.runner
+          push: false

@@ -1,0 +1,57 @@
+# Self-hosting compose file for TheOpenTranscribe.
+#
+# Operator invariants this file does NOT and cannot enforce (see README):
+#   - Exactly one `runner` process per DATA_DIR. Do not `--scale runner=2`
+#     and do not point a second compose project at the same `data_dir`
+#     volume -- the runner's stale-PROCESSING recovery sweep cannot
+#     distinguish an orphan from a second genuinely active runner.
+#
+# `web` and `runner` have no dependency on each other: both are independent
+# readers/writers of the same SQLite file (WAL mode, busy_timeout already
+# handles contention at the application layer), so no `depends_on` is
+# declared here -- it would imply a coupling that doesn't exist.
+#
+# Healthchecks are defined in Dockerfile.web / Dockerfile.runner themselves
+# (HEALTHCHECK instruction), not duplicated here.
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    ports:
+      - "3000:3000"
+    environment:
+      DATA_DIR: /data
+      THEOPENTRANSCRIBE_CONFIG_DIR: /config
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      THEOPENTRANSCRIBE_TRUSTED_ORIGINS: ${THEOPENTRANSCRIBE_TRUSTED_ORIGINS:-}
+    volumes:
+      - data_dir:/data
+      - config_dir:/config
+    restart: unless-stopped
+
+  runner:
+    build:
+      context: .
+      dockerfile: Dockerfile.runner
+    environment:
+      DATA_DIR: /data
+      THEOPENTRANSCRIBE_CONFIG_DIR: /config
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      RUNNER_POLL_INTERVAL_MS: ${RUNNER_POLL_INTERVAL_MS:-}
+    volumes:
+      - data_dir:/data
+      - config_dir:/config
+    restart: unless-stopped
+    # A hard container-level upper bound, not a claim that Docker preserves
+    # the runner's own unbounded-shutdown design (see packages/runner/src/
+    # index.ts: first SIGTERM lets the active job finish with no internal
+    # timeout). If a transcription legitimately runs longer than this,
+    # `docker compose down`/`stop` SIGKILLs it. Operators transcribing very
+    # long media should raise this value; no infinite value exists.
+    stop_grace_period: 600s
+
+volumes:
+  data_dir:
+  config_dir:

@@ -1,6 +1,7 @@
 import { openDb } from "@theopentranscribe/db";
 
 import { loadConfig } from "./config.js";
+import { HEARTBEAT_INTERVAL_MS, touchHeartbeat } from "./heartbeat.js";
 import { recoverStaleProcessingJobs } from "./recovery.js";
 import { startPollLoop } from "./poller.js";
 
@@ -16,6 +17,12 @@ function main(): void {
   console.log(
     `[runner] starting, DATA_DIR=${config.dataDir}, pollIntervalMs=${config.pollIntervalMs}`,
   );
+
+  // Docker healthcheck signal (see heartbeat.ts): runs on its own fixed
+  // timer, independent of the poll loop's await boundaries, so it keeps
+  // advancing while the loop is blocked on a single long-running job.
+  touchHeartbeat(config.dataDir);
+  const heartbeatTimer = setInterval(() => touchHeartbeat(config.dataDir), HEARTBEAT_INTERVAL_MS);
 
   const loop = startPollLoop(db, config);
 
@@ -44,10 +51,12 @@ function main(): void {
 
   loop.done
     .then(() => {
+      clearInterval(heartbeatTimer);
       db.$client.close();
       process.exit(0);
     })
     .catch((err) => {
+      clearInterval(heartbeatTimer);
       console.error("[runner] fatal error in poll loop:", err);
       db.$client.close();
       process.exit(1);

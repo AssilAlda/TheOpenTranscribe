@@ -1,0 +1,32 @@
+# Mirrors .gitignore, plus Docker-specific and local-only exclusions.
+# Native modules and build output must always be produced *inside* the
+# image, never copied in from the host (see Dockerfile.web/.runner).
+
+.git/
+docs/
+
+node_modules/
+dist/
+.next/
+*.tsbuildinfo
+
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.egg-info/
+build/
+.pytest_cache/
+
+.env
+.env.*
+!.env.example
+
+*.sqlite
+*.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm
+data/
+.theopentranscribe/
+
+.DS_Store

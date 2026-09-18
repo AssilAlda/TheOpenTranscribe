@@ -1,0 +1,109 @@
+# syntax=docker/dockerfile:1
+#
+# packages/web is a standalone npm package (no workspaces) that depends on
+# packages/db and packages/provider-config via `file:../x` specifiers, which
+# npm materializes as *relative symlinks* into node_modules (verified:
+# node_modules/@theopentranscribe/db -> ../../../db). Those symlinks only
+# resolve if packages/db and packages/provider-config physically exist at
+# the same relative sibling paths in the final image -- so this file keeps
+# all three packages as real directories under a shared /app/packages/
+# parent all the way to the runtime stage, rather than flattening/copying
+# only compiled output.
+
+########################################
+# base: Debian bookworm + Node 22. Same recipe as Dockerfile.runner's build
+# stage, so better-sqlite3's native binding (pulled in transitively via
+# packages/db) compiles against an ABI-identical glibc/Node pair to what it
+# will run under, even though the runtime stage below is a leaner image.
+########################################
+FROM python:3.13-slim-bookworm AS base
+# build-essential (make/gcc/g++) is required at image-build time: no
+# better-sqlite3 prebuild matched linux/arm64 + this Node/glibc combination
+# during testing, so `npm ci` falls back to compiling its native binding
+# from source via node-gyp.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      ca-certificates curl gnupg build-essential \
+    && curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && apt-get install -y --no-install-recommends nodejs \
+    && rm -rf /var/lib/apt/lists/*
+
+########################################
+# deps: install + build in the required order -- db, then provider-config,
+# then web. Everything runs inside this image; never copy host
+# node_modules/dist in, since better-sqlite3 must compile for this exact
+# platform/arch/Node ABI.
+########################################
+FROM base AS deps
+WORKDIR /app
+
+COPY packages/db packages/db/
+# packages/db's `prepare` npm lifecycle hook runs `npm run build`
+# automatically as part of `npm ci` -- no separate build step needed.
+RUN npm --prefix packages/db ci
+
+COPY packages/provider-config packages/provider-config/
+# provider-config has no `prepare` hook and its own TypeScript toolchain is
+# a devDependency, so --include=dev is required here even though the
+# overall image aims for a lean production runtime -- mirrors the
+# build:provider-config script both packages/runner and packages/web define.
+RUN npm --prefix packages/provider-config ci --include=dev \
+    && npm --prefix packages/provider-config run build
+
+COPY packages/web packages/web/
+RUN npm --prefix packages/web ci
+
+########################################
+# builder: `next build` needs the devDependencies installed above (its own
+# `prebuild` hook also re-runs build:provider-config -- a harmless no-op,
+# already built). Prune every package's own node_modules to production-only
+# only *after* all builds are done.
+########################################
+FROM deps AS builder
+RUN npm --prefix packages/web run build
+
+# Only packages/web's own node_modules is pruned. packages/db defines a
+# `prepare` lifecycle hook, which `npm prune` re-triggers as part of its own
+# tree reification -- after devDependencies (including typescript) have
+# already been removed in that same operation, so the hook then fails with
+# "tsc: not found". packages/db and packages/provider-config are small
+# enough that shipping their devDependencies unused in the final image is
+# an acceptable, simple tradeoff (the project already deferred `output:
+# "standalone"` image-size optimization for the same reason).
+RUN npm --prefix packages/web prune --omit=dev
+
+########################################
+# runtime: leaner final image (no Python needed to run Next.js). Same
+# Debian bookworm base and Node 22 major as `base`, so the copied
+# better-sqlite3 binding stays ABI-compatible.
+#
+# Fixed non-root UID:GID (10001:10001), identical to Dockerfile.runner --
+# packages/web writes the Phase 7 managed provider-config file (0600/0700
+# perms) that the runner container must be able to read; sharing one UID
+# across both images preserves those permissions unweakened rather than
+# requiring a world-readable fallback.
+########################################
+FROM node:22-bookworm-slim AS runtime
+
+RUN groupadd -g 10001 app && useradd -u 10001 -g app -M -s /usr/sbin/nologin app
+WORKDIR /app
+RUN mkdir -p /data /config && chown -R app:app /data /config /app
+
+COPY --from=builder --chown=app:app /app/packages/db packages/db/
+COPY --from=builder --chown=app:app /app/packages/provider-config packages/provider-config/
+COPY --from=builder --chown=app:app /app/packages/web packages/web/
+
+USER app
+ENV NODE_ENV=production
+ENV PORT=3000
+EXPOSE 3000
+WORKDIR /app/packages/web
+
+# next start's default hostname is already 0.0.0.0 (verified against this
+# repo's installed Next version) -- no -H flag needed for container networking.
+HEALTHCHECK --interval=10s --timeout=3s --retries=5 --start-period=15s \
+  CMD node -e "fetch('http://localhost:'+(process.env.PORT||3000)+'/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+
+# Invoke the already-installed local binary directly -- not `npm run start`,
+# whose `prestart` hook would re-run the provider-config install/build on
+# every container start even though it's already built into this image.
+CMD ["node_modules/.bin/next", "start"]
