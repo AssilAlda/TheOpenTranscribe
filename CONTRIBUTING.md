@@ -10,6 +10,13 @@ and test it locally.
 - Python 3.13 or newer
 - [`ffmpeg`](https://ffmpeg.org/) and `ffprobe` available on `PATH`
 
+## How it works
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/architecture-dark.svg">
+  <img src=".github/assets/architecture-light.svg" alt="Architecture: the browser uploads to web, web queues a job in SQLite, the runner picks it up and starts the transcriber, which sends audio chunks to the OpenAI API and writes the transcript back." width="100%">
+</picture>
+
 ## Project layout
 
 There is no root `package.json` or npm/pnpm workspace — each package under
@@ -65,10 +72,17 @@ CI (`.github/workflows/ci.yml`) runs all of the above, plus `npm audit`/
 
 ## Docker quickstart
 
-If you don't want to set up Python/Node locally, `docker compose up -d
---build` runs the whole stack (web dashboard + background runner). See the
-[README](README.md) for the step-by-step guide, and `.env.example` /
-`docker-compose.yml` for the volumes and environment variables.
+To run your local changes in Docker (web dashboard + background runner)
+instead of the published images:
+
+```bash
+cp .env.example .env
+docker compose up -d --build
+```
+
+See `.env.example` and `docker-compose.yml` for the volumes and environment
+variables. End users install with `install.sh` (see the README), which uses
+the prebuilt release images instead of building from source.
 
 ## Reporting bugs and security issues
 
