@@ -206,15 +206,10 @@ Found a vulnerability? Please report it privately — see [SECURITY.md](SECURITY
 
 ## 🧩 How it works
 
-```mermaid
-flowchart LR
-    A["🌐 Browser"] -->|upload| B["web<br/>dashboard + API"]
-    B -->|queue job| D[("SQLite<br/>+ your files")]
-    C["runner<br/>background worker"] -->|pick up job| D
-    C -->|start| E["transcriber<br/>Python engine"]
-    E -->|"audio chunks"| F["☁️ OpenAI API"]
-    E -->|transcript| D
-```
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/architecture-dark.svg">
+  <img src=".github/assets/architecture-light.svg" alt="Architecture: the browser uploads to web, web queues a job in SQLite, the runner picks it up and starts the transcriber, which sends audio chunks to the OpenAI API and writes the transcript back." width="100%">
+</picture>
 
 | Package | What it does |
 |---|---|
