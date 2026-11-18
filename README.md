@@ -1,163 +1,251 @@
-# TheOpenTranscribe
+<div align="center">
 
-An open source transcription app that you run on your own computer.
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/banner-dark.svg">
+  <img src=".github/assets/banner-light.svg" alt="TheOpenTranscribe — self-hosted audio and video transcription" width="100%">
+</picture>
 
-Upload an audio or video file and get a transcript back. You can read it, copy it, or save it as a PDF.
+<br>
+<br>
 
-You need your own OpenAI API key. You can create one at https://platform.openai.com/api-keys
+[![CI](https://github.com/AssilAlda/TheOpenTranscribe/actions/workflows/ci.yml/badge.svg)](https://github.com/AssilAlda/TheOpenTranscribe/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-cc0f5e.svg)](LICENSE)
+![Self-hosted](https://img.shields.io/badge/self--hosted-Docker-2496ED?logo=docker&logoColor=white)
+![Next.js](https://img.shields.io/badge/Next.js-web-000000?logo=nextdotjs&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white)
 
+**Upload an audio or video file, get a clean transcript back.**<br>
+Read it, copy it, or save it as a PDF — all from an app that runs on your own computer.
 
-## How to start the app
+[**Quick start**](#-quick-start) · [Features](#-features) · [Screenshots](#-screenshots) · [Troubleshooting](#-troubleshooting) · [Security](#-security) · [Contributing](#-contributing)
 
+</div>
 
-### Step 1. Install Docker
+<br>
 
-On Mac, install and open one of these:
+## ✨ Features
 
-- Docker Desktop: https://www.docker.com/products/docker-desktop
-- OrbStack: https://orbstack.dev
+<table>
+  <tr>
+    <td width="33%" valign="top">
+      <h3>🏠 Runs on your machine</h3>
+      Your recordings and transcripts are stored locally. No accounts, no cloud dashboard, no third-party storage.
+    </td>
+    <td width="33%" valign="top">
+      <h3>🎯 High accuracy</h3>
+      Powered by OpenAI's <code>gpt-4o-transcribe</code>, using your own API key — you only pay OpenAI for what you use.
+    </td>
+    <td width="33%" valign="top">
+      <h3>🎬 Audio &amp; video</h3>
+      MP3, MP4, M4A, WAV, WEBM, MPEG and MPGA, up to 100 MB. Long recordings are split automatically and stitched back together.
+    </td>
+  </tr>
+  <tr>
+    <td width="33%" valign="top">
+      <h3>📄 Copy or export to PDF</h3>
+      Read the transcript in a clean reader view, copy it with one click, or download a nicely formatted PDF.
+    </td>
+    <td width="33%" valign="top">
+      <h3>📊 Live job tracking</h3>
+      Every upload becomes a job you can follow from <em>Queued</em> → <em>Processing</em> → <em>Completed</em>.
+    </td>
+    <td width="33%" valign="top">
+      <h3>⌨️ Terminal mode</h3>
+      Prefer the command line? Transcribe single files or whole folders with the built-in CLI.
+    </td>
+  </tr>
+</table>
 
-On Windows, install Docker Desktop.
+## 📸 Screenshots
 
-On Linux, install Docker Engine: https://docs.docker.com/engine/install
+<table>
+  <tr>
+    <td colspan="2"><img src=".github/assets/upload.png" alt="Upload page: drop a file, pick an optional language and start the transcription"></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src=".github/assets/transcribed-files.png" alt="Transcribed files: every job with its status"></td>
+    <td width="50%"><img src=".github/assets/transcript.png" alt="Transcript view with Copy and Download PDF buttons"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub><b>Transcribed files</b> — follow every job's status</sub></td>
+    <td align="center"><sub><b>Transcript</b> — read, copy or download as PDF</sub></td>
+  </tr>
+</table>
 
-Make sure Docker is running before you continue.
+## 🚀 Quick start
 
+> [!NOTE]
+> **You need two things:**
+> 1. **Docker** — [Docker Desktop](https://www.docker.com/products/docker-desktop) or [OrbStack](https://orbstack.dev) on Mac, Docker Desktop on Windows, [Docker Engine](https://docs.docker.com/engine/install) on Linux.
+> 2. **An OpenAI API key** — create one at [platform.openai.com/api-keys](https://platform.openai.com/api-keys).
 
-### Step 2. Download the project
+**Already comfortable with Docker?** These three commands are all you need:
+
+```bash
+git clone https://github.com/AssilAlda/TheOpenTranscribe.git && cd TheOpenTranscribe
+cp .env.example .env
+docker compose up -d --build
+```
+
+Then open **http://localhost:3000**, add your API key under **Provider**, and upload a file. 🎉
+
+<details>
+<summary><b>👣 New to this? Follow the step-by-step guide</b></summary>
+
+<br>
+
+**Step 1 — Install Docker**
+
+Install and open Docker Desktop or OrbStack (see the note above). Make sure Docker is running before you continue.
+
+**Step 2 — Download the project**
 
 Open a terminal and run:
 
 ```bash
 git clone https://github.com/AssilAlda/TheOpenTranscribe.git
-```
-
-Then go into the project folder:
-
-```bash
 cd TheOpenTranscribe
 ```
 
 Run all the next commands from this folder.
 
-
-### Step 3. Create the settings file
+**Step 3 — Create the settings file**
 
 ```bash
 cp .env.example .env
 ```
 
-You do not need to change anything in this file.
+You don't need to change anything in this file.
 
-
-### Step 4. Start the app
+**Step 4 — Start the app**
 
 ```bash
 docker compose up -d --build
 ```
 
-The first time takes a few minutes.
+The first time takes a few minutes. You may see red text while it builds — that's normal.
 
-You may see red text while it builds. That is normal.
+**Step 5 — Open the app**
 
+Open **http://localhost:3000** in your browser.
 
-### Step 5. Open the app
+**Step 6 — Add your API key**
 
-Open this address in your browser:
+Click **Provider** in the menu, paste your OpenAI API key and click **Save**.
 
-http://localhost:3000
+**Step 7 — Transcribe a file**
 
+Click **Upload files**, choose an audio or video file (up to 100 MB), then open **Transcribed files** to see your result.
 
-### Step 6. Add your API key
+</details>
 
-- Click Provider in the menu.
-- Paste your OpenAI API key.
-- Click save.
+### Stop and start again
 
+| What you want | Command |
+|---|---|
+| ⏹️ Stop the app | `docker compose down` |
+| ▶️ Start it again | `docker compose up -d` |
+| 🔄 Update to the latest version | `git pull && docker compose up -d --build` |
 
-### Step 7. Transcribe a file
+> [!TIP]
+> Your transcripts are kept in a Docker volume, so they are still there after you stop or update the app.
 
-- Click Upload files.
-- Choose an audio or video file, up to 100 MB.
-- Click Transcribed files to see your result.
+## 🛟 Troubleshooting
 
+<details>
+<summary><b>"no configuration file provided"</b></summary>
+<br>
 
-## Stop and start again
+You're not in the project folder. Run `cd TheOpenTranscribe` and try again.
 
-To stop the app:
+</details>
 
-```bash
-docker compose down
-```
+<details>
+<summary><b>"failed to connect to the docker API"</b></summary>
+<br>
 
-To start it again:
+Docker isn't running. Open Docker Desktop or OrbStack and try again.
 
-```bash
-docker compose up -d
-```
-
-Your transcripts are saved, even when you stop the app.
-
-
-## If something goes wrong
-
-
-### "no configuration file provided"
-
-You are not in the project folder.
-
-Run `cd TheOpenTranscribe` and try again.
-
-
-### "failed to connect to the docker API"
-
-Docker is not running.
-
-Open Docker Desktop or OrbStack and try again.
-
-If you use Colima, run these two commands:
+If you use Colima:
 
 ```bash
 colima start
 docker context use colima
 ```
 
+</details>
 
-### A file stays on "Queued"
+<details>
+<summary><b>A file stays on "Queued"</b></summary>
+<br>
 
-The background worker is not running.
+The background worker isn't running. Run `docker compose ps` and check that both **web** and **runner** are running.
 
-Run `docker compose ps` and check that both web and runner are running.
+</details>
 
+<details>
+<summary><b>A file ends as "Failed"</b></summary>
+<br>
 
-### A file ends as "Failed"
+Your API key is probably missing or wrong. Open **Provider** and check your key.
 
-Your API key is probably missing or wrong.
+</details>
 
-Open Provider and check your key.
+## 🔒 Security
 
+> [!IMPORTANT]
+> **TheOpenTranscribe has no login.** It's built for one person on their own computer.
+> - By default it only accepts connections from **your own computer** (`127.0.0.1`).
+> - To use it from other devices on your home network, see `THEOPENTRANSCRIBE_BIND` in [`.env.example`](.env.example). Anyone who can reach the app can use your API key.
+> - **Never expose it to the internet** without extra protection, such as a VPN or a reverse proxy with login.
 
-## Good to know
+> [!WARNING]
+> Your API key is stored as plain text on your computer (in a file only your user can read). Treat the machine accordingly.
 
-- The app has no login. By default it only accepts connections from your own computer.
-- To use it from other devices on your home network, see `THEOPENTRANSCRIBE_BIND` in `.env.example`. Anyone who can reach the app can use your API key.
-- Do not put it on the internet without extra protection, such as a VPN or a reverse proxy with login.
-- Your API key is saved as plain text on your computer.
-- Found a security problem? See SECURITY.md.
+Found a vulnerability? Please report it privately — see [SECURITY.md](SECURITY.md).
 
+## 🧩 How it works
 
-## Use it from the terminal instead
+```mermaid
+flowchart LR
+    A["🌐 Browser"] -->|upload| B["web<br/>dashboard + API"]
+    B -->|queue job| D[("SQLite<br/>+ your files")]
+    C["runner<br/>background worker"] -->|pick up job| D
+    C -->|start| E["transcriber<br/>Python engine"]
+    E -->|"audio chunks"| F["☁️ OpenAI API"]
+    E -->|transcript| D
+```
 
-You can also use the app without Docker, from the terminal.
+| Package | What it does |
+|---|---|
+| [`packages/web`](packages/web) | Next.js dashboard and HTTP API |
+| [`packages/runner`](packages/runner) | Background worker that picks up queued jobs |
+| [`packages/transcriber`](packages/transcriber) | Python transcription engine and CLI |
+| [`packages/db`](packages/db) | SQLite storage for jobs |
+| [`packages/provider-config`](packages/provider-config) | Safe storage of the API key |
+| [`packages/contract`](packages/contract) | Shared JSON job format |
 
-See the guide in packages/transcriber/README.md
+## ⌨️ Use it from the terminal
 
+Don't want the web app? The transcription engine also works as a standalone CLI:
 
-## For developers
+```bash
+theopentranscribe path/to/recording.mp4 --language en
+```
 
-See CONTRIBUTING.md
+See [`packages/transcriber/README.md`](packages/transcriber/README.md) for setup.
 
+## 🤝 Contributing
 
-## License
+Contributions are welcome! Read [CONTRIBUTING.md](CONTRIBUTING.md) to get set up, and please follow the [Code of Conduct](CODE_OF_CONDUCT.md).
 
-MIT. See the LICENSE file.
+Bugs and ideas → [open an issue](https://github.com/AssilAlda/TheOpenTranscribe/issues/new/choose).
+
+## 📄 License
+
+[MIT](LICENSE) © Assil Alda
+
+<div align="center">
+<br>
+<sub>If TheOpenTranscribe is useful to you, a ⭐ on GitHub helps others find it.</sub>
+</div>
