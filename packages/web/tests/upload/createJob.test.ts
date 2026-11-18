@@ -151,7 +151,7 @@ describe("createJobFromUpload", () => {
     const body = buildMultipartBody({ filename: "sample.wav", fileBytes: validWavBytes() });
 
     // Force the DB insert to fail by closing the underlying connection --
-    // simulates "file write succeeded, DB insert failed" (docs/ARCHITECTURE.md §15).
+    // simulates "file write succeeded, DB insert failed".
     const brokenDb = {
       insert: () => {
         throw new Error("simulated DB failure");

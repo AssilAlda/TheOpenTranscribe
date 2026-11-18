@@ -67,8 +67,14 @@ CI (`.github/workflows/ci.yml`) runs all of the above, plus `npm audit`/
 
 If you don't want to set up Python/Node locally, `docker compose up -d
 --build` runs the whole stack (web dashboard + background runner). See the
-"Self-hosting with Docker" section of the [README](README.md) for details
-on the required volumes and environment variables.
+[README](README.md) for the step-by-step guide, and `.env.example` /
+`docker-compose.yml` for the volumes and environment variables.
+
+## Reporting bugs and security issues
+
+- Bugs and feature requests: open a GitHub issue.
+- Security vulnerabilities: please **don't** open a public issue — follow
+  [SECURITY.md](SECURITY.md) instead.
 
 ## Pull requests
 
@@ -76,4 +82,6 @@ on the required volumes and environment variables.
   Python packages) before pushing — CI re-runs everything, but catching
   issues locally first is faster.
 - Keep changes scoped to the package(s) they concern where possible.
+- By participating you agree to follow the
+  [Code of Conduct](CODE_OF_CONDUCT.md).
 - This project is MIT licensed (see [LICENSE](LICENSE)); no CLA is required.

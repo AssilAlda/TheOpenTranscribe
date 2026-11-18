@@ -15,7 +15,7 @@ describe("ProviderSettings", () => {
     vi.restoreAllMocks();
   });
 
-  it("renders the Connected accounts section with a ChatGPT card, unchanged from Phase 6", () => {
+  it("renders the Connected accounts section with a ChatGPT card", () => {
     vi.stubGlobal("fetch", statusFetch({ configured: false, source: "unconfigured", locked: false }));
     render(<ProviderSettings />);
 
@@ -23,7 +23,7 @@ describe("ProviderSettings", () => {
     expect(screen.getByText("ChatGPT")).toBeInTheDocument();
   });
 
-  it("the connected-account Connect action remains disabled and unavailable -- connected-account transcription is not officially supportable (see the Phase 7 investigation)", () => {
+  it("the connected-account Connect action remains disabled and unavailable -- connected-account transcription is not officially supportable", () => {
     vi.stubGlobal("fetch", statusFetch({ configured: false, source: "unconfigured", locked: false }));
     render(<ProviderSettings />);
 

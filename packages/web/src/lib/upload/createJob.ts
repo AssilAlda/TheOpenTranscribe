@@ -46,13 +46,13 @@ function validateUploadContent(parsed: ParsedUpload): void {
 }
 
 /**
- * Orchestrates the full Phase 5 job-creation flow (docs/ARCHITECTURE.md §15):
- * stream upload to a temp file (parseMultipartUpload) -> validate content ->
- * atomically rename into the locked final upload path -> insert a QUEUED
- * row. Any failure up to and including the DB insert is cleaned up so no
- * orphaned temp file or half-created job is left from the caller's
- * perspective; a hard process crash between rename and insert is the one
- * accepted residual risk (see §15), not handled here.
+ * Orchestrates the full job-creation flow: stream upload to a temp file
+ * (parseMultipartUpload) -> validate content -> atomically rename into the
+ * locked final upload path -> insert a QUEUED row. Any failure up to and
+ * including the DB insert is cleaned up so no orphaned temp file or
+ * half-created job is left from the caller's perspective; a hard process
+ * crash between rename and insert is the one accepted residual risk, not
+ * handled here.
  */
 export async function createJobFromUpload(
   request: Request,

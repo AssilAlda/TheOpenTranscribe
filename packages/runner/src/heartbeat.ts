@@ -2,7 +2,7 @@ import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 /**
- * Phase 8: Docker liveness signal for the runner container, which has no
+ * Docker liveness signal for the runner container, which has no
  * HTTP surface (subprocess-only coupling to the transcriber, per the locked
  * architecture -- adding an HTTP server here would be scope creep against
  * that design). A fixed-cadence heartbeat file is touched independently of

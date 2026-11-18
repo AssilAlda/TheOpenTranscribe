@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { extensionOf, isAllowedExtension } from "@/lib/upload/constants";
 
-describe("upload extension allowlist (locked docs/ARCHITECTURE.md §15)", () => {
+describe("upload extension allowlist", () => {
   it.each(["mp3", "mp4", "mpeg", "mpga", "m4a", "wav", "webm"])(
     "accepts .%s",
     (ext) => {

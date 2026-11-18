@@ -77,7 +77,7 @@ RUN npm --prefix packages/web prune --omit=dev
 # better-sqlite3 binding stays ABI-compatible.
 #
 # Fixed non-root UID:GID (10001:10001), identical to Dockerfile.runner --
-# packages/web writes the Phase 7 managed provider-config file (0600/0700
+# packages/web writes the managed provider-config file (0600/0700
 # perms) that the runner container must be able to read; sharing one UID
 # across both images preserves those permissions unweakened rather than
 # requiring a world-readable fallback.

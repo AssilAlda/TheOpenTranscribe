@@ -121,9 +121,9 @@ describe("OpenAICredentialModal", () => {
     await waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent(/rejected this api key/i));
   });
 
-  // CORRECTION 2 §2B: a browser-to-server transport failure is a distinct
-  // domain from Decision 4's server-side validation outcomes -- it must
-  // never be presented as "saved, unverified".
+  // A browser-to-server transport failure is a distinct domain from the
+  // server-side key-validation outcomes -- it must never be presented as
+  // "saved, unverified".
   it("a browser-side fetch failure shows a safe transport message, never a fabricated saved/unverified claim", async () => {
     vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new TypeError("Failed to fetch")));
     const user = userEvent.setup();

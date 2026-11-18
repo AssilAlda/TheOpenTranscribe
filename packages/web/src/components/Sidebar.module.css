@@ -1,6 +1,6 @@
 /* Background is --color-bg -- the exact same beige as the main canvas, not
    a separate cream/ivory nav-chrome token (that token, --color-sidebar-bg,
-   has been retired; see app/globals.css). Owner decision to simplify the
+   has been retired; see app/globals.css). A deliberate choice to simplify the
    surface system: canvas and all primary nav chrome now read as one
    unified beige surface, with white cards/inputs providing the app's only
    surface-level contrast. --color-border is unchanged for the divider --
@@ -8,7 +8,7 @@
    used everywhere else in the app that borders this same background
    (e.g. PageLayout's header border-bottom), so it doesn't need its own
    retune just because the surface it sits on changed identity.
-   Width restored to 200px (owner decision, explicitly reverted from a
+   Width is 200px (deliberately reverted from an earlier
    180px density-pass edit) -- Sidebar width is locked; density comes from
    typography/spacing/component sizing instead, never from narrowing the
    nav rail itself. */

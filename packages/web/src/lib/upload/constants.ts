@@ -1,7 +1,6 @@
 /**
- * Locked at Phase 5 phase start (docs/ARCHITECTURE.md §15). Application-level
- * allowlist, not a permanent record of provider capability — provider
- * capabilities may evolve independently of this list.
+ * Application-level allowlist, not a permanent record of provider
+ * capability — provider capabilities may evolve independently of this list.
  */
 export const ALLOWED_EXTENSIONS = [
   "mp3",
@@ -15,7 +14,7 @@ export const ALLOWED_EXTENSIONS = [
 
 export type AllowedExtension = (typeof ALLOWED_EXTENSIONS)[number];
 
-/** Locked at Phase 5 phase start: 100 MiB, an explicit v1 product/safety limit. */
+/** 100 MiB, an explicit v1 product/safety limit. */
 export const MAX_UPLOAD_BYTES = 100 * 1024 * 1024;
 
 /** Shared with the Transcribe page's contextual rail so both surfaces derive the same text from this one limit. */

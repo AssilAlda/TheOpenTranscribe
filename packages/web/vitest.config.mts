@@ -8,7 +8,7 @@ export default defineConfig({
     },
   },
   test: {
-    // Default environment stays "node" (matches Phase 5's existing lib/route
+    // Default environment stays "node" (matches the existing lib/route
     // tests, which need real fs/DB access, not a DOM). Component tests opt
     // into jsdom individually via a `// @vitest-environment jsdom` docblock
     // at the top of the file -- see tests/components/*.test.tsx.

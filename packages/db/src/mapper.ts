@@ -1,13 +1,12 @@
 import type { JobRow } from "./schema.js";
 
 /**
- * Mirrors the Phase 2 JobDocument shape (packages/contract,
- * theopentranscribe_contract/job.py) as a plain TS type. This is not a
- * full TypeScript port of the contract's JSON Schema validator — that is
- * the separate, still-OPEN "TypeScript side of the contract" question
- * (docs/ARCHITECTURE.md §12). This type exists only so packages/db has
- * something concrete to map to/from; it intentionally matches the contract's
- * field names and nesting exactly.
+ * Mirrors the JobDocument shape (packages/contract,
+ * theopentranscribe_contract/job.py) as a plain TS type. This is not a full
+ * TypeScript port of the contract's JSON Schema validator — that is the
+ * separate, still-open "TypeScript side of the contract" question. This type
+ * exists only so packages/db has something concrete to map to/from; it
+ * intentionally matches the contract's field names and nesting exactly.
  */
 export const JOB_STATUSES = ["QUEUED", "PROCESSING", "COMPLETED", "FAILED"] as const;
 export type JobStatus = (typeof JOB_STATUSES)[number];
@@ -56,7 +55,7 @@ export type JobRowValues = {
 export class JobLifecycleError extends Error {}
 
 /**
- * Enforces the same result/error-follows-status invariants as the Phase 2
+ * Enforces the same result/error-follows-status invariants as the job
  * contract (job.py: _validate_result / _validate_error) before a document
  * is flattened into a row, so packages/db can't persist a row that the
  * contract itself would reject. Not a full re-implementation of the

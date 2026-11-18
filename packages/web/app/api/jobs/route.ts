@@ -1,18 +1,28 @@
 import { desc, jobs, rowToJobDocument, sql } from "@theopentranscribe/db";
 
 import { getWebDb } from "@/lib/db";
-import { apiErrorToResponse, dataResponse } from "@/lib/http";
+import { ApiError, apiErrorToResponse, dataResponse } from "@/lib/http";
 import { parsePagination } from "@/lib/pagination";
+import { isRequestOriginTrusted } from "@/lib/provider/origin";
 import { createJobFromUpload } from "@/lib/upload/createJob";
 
-// Locked at Phase 5 phase start (docs/ARCHITECTURE.md §15): the upload path
-// streams the multipart body via @fastify/busboy and must run in the
-// Node.js runtime, never Edge.
+// The upload path streams the multipart body via @fastify/busboy and must
+// run in the Node.js runtime, never Edge.
 export const runtime = "nodejs";
 
-/** POST /api/jobs -- upload a media file and create a QUEUED job. */
+/**
+ * POST /api/jobs -- upload a media file and create a QUEUED job.
+ *
+ * Origin-checked before the body is read: a multipart/form-data POST is a
+ * CORS "simple request", so without this any website the user visits could
+ * submit uploads to a locally running instance and spend their OpenAI
+ * credits (CSRF). Same trust rules as the Provider API.
+ */
 export async function POST(request: Request): Promise<Response> {
   try {
+    if (!isRequestOriginTrusted(request)) {
+      throw new ApiError(403, "untrusted_origin", "This request's Origin is not trusted.");
+    }
     const { db, dataDir } = getWebDb();
     const doc = await createJobFromUpload(request, { db, dataDir });
     return dataResponse(doc, 201);

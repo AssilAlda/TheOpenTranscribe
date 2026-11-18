@@ -1,5 +1,5 @@
 /**
- * Shared response envelope for the Phase 5 API: `{ data: ... }` on success,
+ * Shared response envelope for the web API: `{ data: ... }` on success,
  * `{ error: { code, message } }` on failure, with a real HTTP status code
  * in both cases.
  */

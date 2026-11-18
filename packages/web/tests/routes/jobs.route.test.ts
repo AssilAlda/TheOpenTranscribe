@@ -20,7 +20,12 @@ function validWavBytes(size = 512): Buffer {
   return Buffer.concat([header, Buffer.alloc(size, 0)]);
 }
 
-function uploadRequest(filename: string, fileBytes: Buffer, language?: string): Request {
+function uploadRequest(
+  filename: string,
+  fileBytes: Buffer,
+  language?: string,
+  origin: string | null = "http://localhost:3000",
+): Request {
   const parts: Buffer[] = [];
   if (language !== undefined) {
     parts.push(
@@ -38,11 +43,12 @@ function uploadRequest(filename: string, fileBytes: Buffer, language?: string): 
   parts.push(Buffer.from(`\r\n--${BOUNDARY}--\r\n`));
   const body = new Uint8Array(Buffer.concat(parts));
 
-  return new Request("http://localhost/api/jobs", {
-    method: "POST",
-    headers: { "content-type": `multipart/form-data; boundary=${BOUNDARY}` },
-    body,
-  });
+  const headers: Record<string, string> = {
+    "content-type": `multipart/form-data; boundary=${BOUNDARY}`,
+  };
+  if (origin !== null) headers.origin = origin;
+
+  return new Request("http://localhost/api/jobs", { method: "POST", headers, body });
 }
 
 let dataDir: string;
@@ -75,6 +81,20 @@ describe("POST /api/jobs", () => {
     expect(res.status).toBe(415);
     const body = await res.json();
     expect(body.error.code).toBe("unsupported_extension");
+  });
+
+  it("rejects a cross-site upload (untrusted Origin) with 403 and creates no job", async () => {
+    const res = await POST(uploadRequest("sample.wav", validWavBytes(), "en", "https://evil.example"));
+    expect(res.status).toBe(403);
+    expect((await res.json()).error.code).toBe("untrusted_origin");
+
+    const list = await (await GET(new Request("http://localhost/api/jobs"))).json();
+    expect(list.pagination.total).toBe(0);
+  });
+
+  it("rejects an upload with no Origin header with 403", async () => {
+    const res = await POST(uploadRequest("sample.wav", validWavBytes(), "en", null));
+    expect(res.status).toBe(403);
   });
 });
 
