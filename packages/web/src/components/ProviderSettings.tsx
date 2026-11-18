@@ -8,17 +8,16 @@ import { OpenAICredentialModal, type CredentialModalMode } from "./OpenAICredent
 import styles from "./ProviderSettings.module.css";
 
 /**
- * Phase 7: the "Providers" section's OpenAI API card is now genuinely
- * functional (Owner Decisions 2, 4, 5) -- Configure/Replace open a
- * dedicated native <dialog> (OpenAICredentialModal), Remove is an inline
- * explicit confirmation, and every displayed state comes directly from
- * GET /api/provider/openai's safe status DTO (never invented client-side).
+ * The "Providers" section's OpenAI API card is fully functional --
+ * Configure/Replace open a dedicated native <dialog> (OpenAICredentialModal),
+ * Remove is an inline explicit confirmation, and every displayed state comes
+ * directly from GET /api/provider/openai's safe status DTO (never invented
+ * client-side).
  *
- * "Connected accounts" remains presentation-only, unchanged from Phase 6:
- * connected-account/OAuth transcription authorization is not officially
- * supportable today (see the Phase 7 investigation's OpenAI research) --
- * this is the intentionally-inert `openai_codex` / CONNECTED_ACCOUNT
- * extension seam, not unfinished Phase 7 work.
+ * "Connected accounts" is presentation-only: connected-account/OAuth
+ * transcription authorization is not officially supportable with OpenAI today
+ * -- this is the intentionally-inert `openai_codex` /CONNECTED_ACCOUNT
+ * extension seam, not unfinished work.
  */
 
 type ConnectedAccountStatus = "connected" | "not_connected" | "unavailable";

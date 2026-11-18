@@ -15,7 +15,7 @@ build/
 dist/
 .pytest_cache/
 
-# node (future apps/web, apps/runner)
+# node
 node_modules/
 
 # Next.js build output (packages/web)
@@ -24,7 +24,7 @@ node_modules/
 # TypeScript incremental build cache (packages/web's tsconfig.json)
 *.tsbuildinfo
 
-# local databases (Phase 3), including WAL sidecar files
+# local databases, including WAL sidecar files
 *.sqlite
 *.sqlite3
 *.sqlite3-wal
@@ -34,6 +34,6 @@ node_modules/
 # os metadata
 .DS_Store
 
-# local application data (introduced in a later phase, excluded defensively now)
+# local application data
 data/
 .theopentranscribe/

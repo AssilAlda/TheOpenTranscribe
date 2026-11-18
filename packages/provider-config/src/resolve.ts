@@ -1,12 +1,11 @@
 /**
- * The single, canonical env > managed > unconfigured resolver (Owner
- * Decisions 2 and 3). Shared by packages/web (status/Configure/Replace/
- * Remove) and packages/runner (fresh resolution immediately before every
- * job) so the two consumers can never disagree about which source is
- * active. An environment value is always authoritative and is never
- * overridden by a freshly-read managed value; the environment source itself
- * is never re-read for changes within a running process (Owner Decision 3
- * §3) -- only the managed tier is re-read fresh on every call.
+ * The single, canonical env > managed > unconfigured resolver. Shared by
+ * packages/web (status/Configure/Replace/Remove) and packages/runner (fresh
+ * resolution immediately before every job) so the two consumers can never
+ * disagree about which source is active. An environment value is always
+ * authoritative and is never overridden by a freshly-read managed value; the
+ * environment source itself is never re-read for changes within a running
+ * process -- only the managed tier is re-read fresh on every call.
  */
 
 import { readManagedConfig } from "./store.js";

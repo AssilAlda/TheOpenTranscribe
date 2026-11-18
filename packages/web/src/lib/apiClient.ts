@@ -1,8 +1,8 @@
 /**
- * Minimal shared client-side fetch helper for the dashboard (Phase 6). Talks
- * to the existing Phase 5 same-origin API's `{data:...}`/`{error:{code,
- * message}}` envelope -- does not duplicate any job-persistence logic, just
- * parses the response shape already defined by src/lib/http.ts.
+ * Minimal shared client-side fetch helper for the dashboard. Talks to the
+ * existing same-origin API's `{data:...}`/`{error:{code, message}}` envelope
+ * -- does not duplicate any job-persistence logic, just parses the response
+ * shape already defined by src/lib/http.ts.
  */
 
 export interface ApiErrorBody {

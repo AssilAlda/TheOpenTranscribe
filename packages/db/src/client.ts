@@ -19,9 +19,9 @@ export interface OpenDbOptions {
 }
 
 /**
- * Opens (creating if needed) the Phase 3 SQLite database at
+ * Opens (creating if needed) the SQLite database at
  * DATA_DIR/theopentranscribe.sqlite3, enables WAL mode, and returns a
- * Drizzle client bound to the Phase 3 schema.
+ * Drizzle client bound to the jobs schema.
  *
  * WAL is a durable, per-database-file setting (SQLite persists it in the
  * file header), but is asserted on every open rather than assumed, since a

@@ -18,7 +18,7 @@ interface RouteContext {
 
 /**
  * GET /api/jobs/:jobId/result/pdf -- a professional, on-demand PDF export of
- * the completed transcript. Purely additive to the Phase 5 API: does not
+ * the completed transcript. Purely additive to the jobs API: does not
  * modify GET /api/jobs/:jobId/result or any existing route/contract. The
  * generated PDF is never persisted -- it exists only as this response body.
  */

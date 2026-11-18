@@ -3,9 +3,9 @@ import { check, index, integer, sqliteTable, text } from "drizzle-orm/sqlite-cor
 
 /**
  * The `jobs` table is a single normalized table whose columns map directly
- * onto the Phase 2 JobDocument fields (packages/contract, job.v1.schema.json).
+ * onto the JobDocument fields (packages/contract, job.v1.schema.json).
  * No separate input/result/error tables, no JSON blob column — every
- * contract field is its own column, per the locked Phase 3 decision.
+ * contract field is its own column, by design.
  */
 export const jobs = sqliteTable(
   "jobs",
@@ -58,8 +58,9 @@ export const jobs = sqliteTable(
           AND ${table.errorOccurredAt} IS NULL)
       )`,
     ),
-    // Runner (Phase 4) needs to find QUEUED jobs; dashboard/history (Phase 3's
-    // own "queryable history" responsibility, and Phase 6) needs recency order.
+    // The runner needs to find QUEUED jobs; job history (this package's own
+    // "queryable history" responsibility, and the dashboard) needs recency
+    // order.
     index("idx_jobs_status").on(table.status),
     index("idx_jobs_created_at").on(table.createdAt),
   ],

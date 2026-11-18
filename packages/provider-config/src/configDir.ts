@@ -1,11 +1,11 @@
 /**
- * Phase 7 Owner Decision 8: the managed-configuration directory is resolved
- * from an explicit, optional, namespaced environment variable --
- * THEOPENTRANSCRIBE_CONFIG_DIR (never a generic CONFIG_DIR, to avoid
- * collisions and to stay self-explanatory in Docker/self-hosted setups) --
- * with a deterministic user-local fallback when it isn't set. Independent of
- * DATA_DIR (packages/db's resolveDataDir): never derived from it, never
- * placed inside it, and this package never reads DATA_DIR at all.
+ * The managed-configuration directory is resolved from an explicit, optional,
+ * namespaced environment variable -- THEOPENTRANSCRIBE_CONFIG_DIR (never a
+ * generic CONFIG_DIR, to avoid collisions and to stay self-explanatory in
+ * Docker/self-hosted setups) -- with a deterministic user-local fallback when
+ * it isn't set. Independent of DATA_DIR (packages/db's resolveDataDir): never
+ * derived from it, never placed inside it, and this package never reads
+ * DATA_DIR at all.
  *
  * This resolver is the one canonical implementation, consumed identically by
  * packages/web (Configure/Replace/Remove/status) and packages/runner
@@ -27,10 +27,10 @@ import { ProviderConfigError } from "./errors.js";
  *   2. A deterministic user-local fallback: $XDG_CONFIG_HOME/theopentranscribe
  *      when XDG_CONFIG_HOME is set (and itself absolute), otherwise
  *      ~/.theopentranscribe. This is the simplest cross-platform fallback
- *      consistent with the locked v1 scope (Owner Decision 8 §4 explicitly
- *      allows this single deterministic fallback over full platform-native
- *      resolution) -- the explicit env override remains the preferred,
- *      documented path for servers/containers.
+ *      consistent with the v1 scope (which deliberately chooses this single
+ *      deterministic fallback over full platform-native resolution) -- the
+ *      explicit env override remains the preferred, documented path for
+ *      servers/containers.
  */
 export function resolveConfigDir(env: NodeJS.ProcessEnv = process.env): string {
   const explicit = env.THEOPENTRANSCRIBE_CONFIG_DIR;

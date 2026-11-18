@@ -140,8 +140,8 @@ describe("runTranscriptionJob", () => {
     expect(result).toEqual({ ok: false, failureReason: "failed to start subprocess: ENOENT" });
   });
 
-  // Owner Decision 3: fresh per-job credential resolution (env > managed >
-  // unconfigured), resolved immediately before spawn, never cached.
+  // Fresh per-job credential resolution (env > managed > unconfigured),
+  // resolved immediately before spawn, never cached.
 
   it("fails safely before spawning when neither env nor managed credential exists", async () => {
     const dir = makeTempConfigDir();

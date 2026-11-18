@@ -9,7 +9,7 @@ export interface NavItem {
   Icon: ComponentType<{ size?: number }>;
 }
 
-/** The exactly-three primary destinations. Do not add items without an owner decision. */
+/** The exactly-three primary destinations. Discuss in an issue before adding items. */
 export const NAV_ITEMS: NavItem[] = [
   { href: "/", label: "Upload files", Icon: TranscribeIcon },
   { href: "/files", label: "Transcribed files", Icon: TranscribedFilesIcon },

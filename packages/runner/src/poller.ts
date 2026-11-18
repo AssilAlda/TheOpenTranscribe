@@ -87,7 +87,7 @@ export interface PollLoopHandle {
 }
 
 /**
- * Single-worker poll loop (locked Phase 4 decision): after finishing a job,
+ * Single-worker poll loop (a deliberate v1 decision): after finishing a job,
  * immediately attempt to claim the next one rather than sleeping first; only
  * sleep for config.pollIntervalMs when the queue was found empty.
  */

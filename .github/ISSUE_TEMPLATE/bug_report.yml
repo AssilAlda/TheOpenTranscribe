@@ -1,0 +1,44 @@
+name: Bug report
+description: Something doesn't work as expected
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! **Never paste your OpenAI API key** in an issue.
+        For security vulnerabilities, use SECURITY.md instead of a public issue.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Upload a 20 MB .m4a file
+        2. ...
+  - type: dropdown
+    id: install
+    attributes:
+      label: How do you run it?
+      options:
+        - Docker (docker compose)
+        - From source (npm / Python)
+        - Terminal CLI (packages/transcriber)
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: OS and Docker / Node / Python version
+      placeholder: macOS 15, OrbStack 1.9
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Output of `docker compose logs web runner` (check it for anything private first).
+      render: shell

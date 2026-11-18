@@ -30,7 +30,7 @@ afterEach(() => {
   db.$client.close();
 });
 
-describe("end-to-end persistence against Phase 2 contract examples", () => {
+describe("end-to-end persistence against job contract examples", () => {
   const fixtures: Array<[string, string]> = [
     ["job_queued.json", "11111111-1111-4111-8111-111111111111"],
     ["job_processing.json", "22222222-2222-4222-8222-222222222222"],

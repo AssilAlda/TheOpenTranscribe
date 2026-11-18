@@ -120,7 +120,7 @@ def _validate_input(data: Any, errors: list[str]) -> None:
         )
 
     if "language" in data and data["language"] is not None:
-        # No fixed allowlist: Phase 1 forwards this value as-is to the
+        # No fixed allowlist: the transcriber forwards this value as-is to the
         # provider (see OpenAIProvider.transcribe), so the contract only
         # requires a sensible non-empty string, not a specific language set.
         if not isinstance(data["language"], str) or not data["language"].strip():

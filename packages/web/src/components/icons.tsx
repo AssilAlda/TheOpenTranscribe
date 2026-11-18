@@ -6,8 +6,8 @@
  *
  * This is an experiment in original, product-specific iconography before
  * evaluating an external library (Lucide/Font Awesome): no icon
- * dependency is added here. See docs/ARCHITECTURE.md's Phase 6 section
- * for the project's broader no-unnecessary-dependency stance.
+ * dependency is added here, in keeping with the project's broader
+ * no-unnecessary-dependency stance.
  *
  * ## Design grammar (the family's shared rules)
  *
