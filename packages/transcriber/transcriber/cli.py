@@ -15,12 +15,13 @@ except ImportError:
 if load_dotenv is not None:
     load_dotenv()
 
-from .chunking import find_media_files, extract_audio_chunks
+from .chunking import SUPPORTED_EXTENSIONS, find_media_files, extract_audio_chunks
 from .merge import clean_transcript, merge_transcript_parts
 from .providers.openai_provider import OpenAIProvider
 
 MAX_TRANSCRIBE_RETRIES = 3
 INITIAL_RETRY_DELAY_SECONDS = 2
+SUPPORTED_FORMATS = ", ".join(sorted(SUPPORTED_EXTENSIONS))
 
 
 def transcribe_audio_chunks(
@@ -29,7 +30,7 @@ def transcribe_audio_chunks(
     parts: list[str] = []
 
     for index, audio_path in enumerate(audio_chunks, start=1):
-        print(f"Transkriberar del {index}/{len(audio_chunks)}...")
+        print(f"Transcribing part {index}/{len(audio_chunks)}...")
 
         transcript_text = None
         for attempt in range(1, MAX_TRANSCRIBE_RETRIES + 1):
@@ -39,18 +40,19 @@ def transcribe_audio_chunks(
             except Exception as exc:
                 if attempt == MAX_TRANSCRIBE_RETRIES:
                     raise RuntimeError(
-                        f"Transkribering misslyckades för segment {index}/{len(audio_chunks)} efter {MAX_TRANSCRIBE_RETRIES} försök."
+                        f"Transcription failed for part {index}/{len(audio_chunks)} after {MAX_TRANSCRIBE_RETRIES} attempts."
                     ) from exc
 
                 delay_seconds = INITIAL_RETRY_DELAY_SECONDS * (2 ** (attempt - 1))
                 print(
-                    f"Varning: segment {index} misslyckades (försök {attempt}/{MAX_TRANSCRIBE_RETRIES}). "
-                    f"Försöker igen om {delay_seconds} sekunder..."
+                    f"Warning: part {index} failed (attempt {attempt}/{MAX_TRANSCRIBE_RETRIES}). "
+                    f"Retrying in {delay_seconds} seconds...",
+                    file=sys.stderr,
                 )
                 time.sleep(delay_seconds)
 
         if transcript_text is None:
-            raise RuntimeError(f"Kunde inte transkribera segment {index}/{len(audio_chunks)}.")
+            raise RuntimeError(f"Could not transcribe part {index}/{len(audio_chunks)}.")
 
         parts.append(clean_transcript(transcript_text))
 
@@ -74,83 +76,82 @@ def transcribe_media(media_path: Path, language: Optional[str], provider: OpenAI
     with tempfile.TemporaryDirectory(prefix="theopentranscribe_chunks_") as tmp_dir:
         chunks_dir = Path(tmp_dir)
 
-        print(f"Extraherar och delar upp ljud: {media_path.name}")
+        print(f"Extracting and splitting audio: {media_path.name}")
         audio_chunks = extract_audio_chunks(media_path, chunks_dir)
 
-        print(f"Transkriberar: {media_path.name}")
+        print(f"Transcribing: {media_path.name}")
         return transcribe_audio_chunks(audio_chunks, language, provider)
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="theopentranscribe",
-        description="Transkribera en mediafil eller en mapp med mediafiler (.mp4, .mov, .m4a, .mp3, .wav).",
+        description=f"Transcribe a media file, or every media file in a folder. Supported formats: {SUPPORTED_FORMATS}.",
     )
     parser.add_argument(
         "input_path",
-        help="Sökväg till mediafil eller mapp med mp4, mov, m4a, mp3 eller wav.",
+        help="Path to a media file, or to a folder of media files (not searched recursively).",
     )
     parser.add_argument(
         "--language",
         choices=["sv", "en"],
         default=None,
-        help="Tvinga språk. Utelämna för automatisk språkdetektering.",
+        help="Force the spoken language. Leave out for automatic detection.",
     )
     return parser.parse_args()
+
+
+def fail(message: str) -> None:
+    print(f"Error: {message}", file=sys.stderr)
+    sys.exit(1)
 
 
 def main() -> None:
     args = parse_args()
 
     if not os.getenv("OPENAI_API_KEY"):
-        print("Fel: OPENAI_API_KEY saknas. Sätt miljövariabeln eller lägg den i en .env-fil.")
-        sys.exit(1)
+        fail("OPENAI_API_KEY is not set. Set the environment variable or add it to a .env file.")
 
     input_path = Path(args.input_path).expanduser().resolve()
 
     if not input_path.exists():
-        print(f"Filen eller mappen finns inte: {input_path}")
-        sys.exit(1)
+        fail(f"File or folder not found: {input_path}")
 
     provider = OpenAIProvider()
 
     try:
         media_files = find_media_files(input_path)
         if not media_files:
-            print("Ingen stödd mediafil hittades. Stöd finns för .mp4, .mov, .m4a, .mp3 och .wav.")
-            sys.exit(1)
+            fail(f"No supported media files found. Supported formats: {SUPPORTED_FORMATS}.")
 
         combined_transcriptions: list[tuple[str, str]] = []
 
         for index, media_path in enumerate(media_files, start=1):
-            print(f"Bearbetar mediafil {index}/{len(media_files)}: {media_path.name}")
+            print(f"Processing file {index}/{len(media_files)}: {media_path.name}")
             text = transcribe_media(media_path, args.language, provider)
 
             output_path = media_path.with_suffix(".txt")
-            print(f"Sparar separat textfil: {output_path.name}")
+            print(f"Saved transcript: {output_path.name}")
             save_text(text, output_path)
 
             combined_transcriptions.append((media_path.stem, text))
 
-        combined_output_path = (
-            input_path / f"{input_path.name}.txt"
-            if input_path.is_dir()
-            else input_path.with_name(f"{input_path.stem}_alla_transkriberingar.txt")
-        )
+        # A folder also gets one document with every transcript combined.
+        if input_path.is_dir():
+            combined_output_path = input_path / f"{input_path.name}.txt"
+            save_combined_text(combined_transcriptions, combined_output_path)
+            print(f"Saved combined transcript: {combined_output_path.name}")
 
-        print(f"Sparar samlat dokument: {combined_output_path.name}")
-        save_combined_text(combined_transcriptions, combined_output_path)
-
-        print("Klart!")
+        print("Done!")
 
     except FileNotFoundError as e:
-        print(f"Fel: kunde inte hitta programmet {e.filename}. Installera ffmpeg först.")
+        fail(f"Could not find the program {e.filename}. Install ffmpeg first.")
 
     except subprocess.CalledProcessError:
-        print("Fel: ffmpeg eller ffprobe kunde inte köras korrekt.")
+        fail("ffmpeg or ffprobe did not run correctly.")
 
     except Exception as e:
-        print("Fel:", e)
+        fail(str(e))
 
 
 if __name__ == "__main__":

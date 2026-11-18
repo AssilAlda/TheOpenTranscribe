@@ -78,7 +78,7 @@ def test_exhausting_all_three_attempts_raises_without_a_third_sleep(monkeypatch)
 
     assert len(provider.calls) == 3
     assert sleep_calls == [2, 4]
-    assert "efter 3 försök" in str(excinfo.value)
+    assert "after 3 attempts" in str(excinfo.value)
     assert excinfo.value.__cause__ is not None
 
 
