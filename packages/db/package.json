@@ -1,6 +1,6 @@
 {
   "name": "@theopentranscribe/db",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "SQLite persistence (Drizzle + better-sqlite3, WAL) for TheOpenTranscribe job records, shaped around the JSON job contract.",
   "type": "module",
   "main": "./dist/index.js",
@@ -26,5 +26,10 @@
     "tsx": "^4.23.13",
     "typescript": "^7.0.2",
     "vitest": "^5.0.1"
+  },
+  "overrides": {
+    "@esbuild-kit/core-utils": {
+      "esbuild": "^0.25.0"
+    }
   }
 }

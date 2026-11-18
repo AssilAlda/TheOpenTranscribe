@@ -1,6 +1,6 @@
 {
   "name": "@theopentranscribe/web",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Web API (Next.js Route Handlers) + dashboard UI: upload handling + validation, job creation, job/history queries, serving results, and a dashboard for uploading, tracking, reading, and exporting transcripts.",
   "private": true,
   "scripts": {
