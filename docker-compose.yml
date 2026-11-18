@@ -19,8 +19,12 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.web
+    # Bound to 127.0.0.1 by default: the app has no login, so it must not be
+    # reachable from other machines unless you opt in. To use it from other
+    # devices on your home network, set THEOPENTRANSCRIBE_BIND=0.0.0.0 and
+    # add the URL you browse from to THEOPENTRANSCRIBE_TRUSTED_ORIGINS.
     ports:
-      - "3000:3000"
+      - "${THEOPENTRANSCRIBE_BIND:-127.0.0.1}:3000:3000"
     environment:
       DATA_DIR: /data
       THEOPENTRANSCRIBE_CONFIG_DIR: /config
