@@ -1,17 +1,15 @@
 /**
- * Owner Decision 1 + CORRECTION 1: Origin validation for state-changing
- * Provider/settings routes, anchored to a trusted origin the server itself
- * decides -- never to the request's own inbound `Host` header. A naive
- * `Origin === reflected Host` check is bypassable via DNS rebinding: an
- * attacker's own page (whose Origin and Host already agree with each other,
- * by definition of same-origin requests) can have its hostname's DNS
- * re-pointed, after initial page load, at this server -- passing a check
- * that only compares Origin against Host, since both headers still agree
- * with each other on the attacker's hostname. This module never reads
- * `Host` or any `X-Forwarded-*` header for this decision -- Phase 7 does
- * not build reverse-proxy support, and internet exposure without an
- * external protection layer remains an unsupported deployment model
- * (Owner Decision 1).
+ * Origin validation for state-changing Provider/settings routes, anchored to
+ * a trusted origin the server itself decides -- never to the request's own
+ * inbound `Host` header. A naive `Origin === reflected Host` check is
+ * bypassable via DNS rebinding: an attacker's own page (whose Origin and Host
+ * already agree with each other, by definition of same-origin requests) can
+ * have its hostname's DNS re-pointed, after initial page load, at this server
+ * -- passing a check that only compares Origin against Host, since both
+ * headers still agree with each other on the attacker's hostname. This module
+ * never reads `Host` or any `X-Forwarded-*` header for this decision -- there
+ * is no reverse-proxy support, and internet exposure without an external
+ * protection layer remains an unsupported deployment model.
  *
  * Trusted origins:
  *   1. Any `http(s)://localhost|127.0.0.1|[::1]` origin, at any port --
@@ -25,9 +23,7 @@
  *      "http://192.168.1.50:3000,http://transcribe.lan:3000") -- the
  *      concrete mechanism an operator opts a trusted-LAN deployment into,
  *      beyond plain localhost. Not required for the default localhost
- *      deployment model; this is new, Phase-7-introduced configuration,
- *      reported as such rather than silently invented (see the Phase 7
- *      plan's CORRECTION 1 §1A).
+ *      deployment model.
  *
  * A missing Origin header is rejected outright, not treated as trusted by
  * default: a real browser always sends Origin on a state-changing fetch/

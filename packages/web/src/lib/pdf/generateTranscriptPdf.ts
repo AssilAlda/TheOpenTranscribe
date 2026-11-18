@@ -4,7 +4,7 @@ import path from "node:path";
 
 // `import.meta.dirname` does not survive Next.js/Turbopack's server bundling
 // for Route Handlers (it evaluates to `undefined` at build/runtime inside
-// the bundle) -- found and fixed during Phase 6's own `next build` check.
+// the bundle) -- found and fixed during a `next build` check.
 // `process.cwd()` is the reliable anchor instead: Next.js always runs (dev,
 // build, and `next start`) with cwd set to this package's root.
 /** Exported for reuse by tests that need to build a comparable reference pdfkit document. */
@@ -12,7 +12,7 @@ export const FONT_PATH = path.join(process.cwd(), "src", "lib", "pdf", "fonts", 
 
 /** 1 inch, in PDF points. Exported for reuse by tests that need a comparable reference document. */
 export const PAGE_MARGIN = 72;
-/** PDF points, between paragraphs -- within the owner-approved 6-10pt range. Exported for direct assertion in tests. */
+/** PDF points, between paragraphs -- within the chosen 6-10pt range. Exported for direct assertion in tests. */
 export const PARAGRAPH_GAP = 8;
 
 export interface TranscriptPdfMetadata {
@@ -54,9 +54,8 @@ function loadFont(): Font {
  * Returns the distinct, non-whitespace characters in `text` that the
  * vendored PDF export font has no glyph for. Checked directly against the
  * embedded font's actual coverage via fontkit's `hasGlyphForCodePoint`, not
- * assumed from the font family name (docs/ARCHITECTURE.md's Phase 6 section
- * records why: Noto Sans Regular alone does not cover every script, and
- * this must never be silently guessed).
+ * assumed from the font family name: Noto Sans Regular alone does not cover
+ * every script, and this must never be silently guessed.
  */
 export function findUnsupportedCharacters(text: string): string[] {
   const font = loadFont();

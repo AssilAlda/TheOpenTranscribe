@@ -5,7 +5,7 @@ export interface WebConfig {
 }
 
 /**
- * Reads Phase 5 web API configuration from the environment. DATA_DIR has no
+ * Reads web API configuration from the environment. DATA_DIR has no
  * sensible default (deployment-specific) and is required, matching the same
  * requirement already imposed by packages/db and packages/runner.
  */

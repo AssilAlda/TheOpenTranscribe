@@ -35,9 +35,8 @@ describe("spawnCapture", () => {
     expect(result.stderrTail.length).toBeLessThanOrEqual(4000);
   });
 
-  // Owner Decision 10: this is the mandatory, centralized redaction backstop
-  // for all subprocess stderr -- applied regardless of what the child
-  // process actually prints.
+  // This is the mandatory, centralized redaction backstop for all subprocess
+  // stderr -- applied regardless of what the child process actually prints.
 
   it("redacts an Authorization: Bearer header emitted by the child process", async () => {
     const script = "console.error('Authorization: Bearer sk-should-not-appear-1234567890'); process.exit(1)";
@@ -58,7 +57,7 @@ describe("spawnCapture", () => {
     expect(result.stderrTail).toContain("ordinary failure: file not found");
   });
 
-  // Blocker B1: cross-chunk redaction. streamRedactor.test.ts exercises the
+  // Cross-chunk redaction. streamRedactor.test.ts exercises the
   // StreamRedactor class directly with deterministic, hand-picked chunk
   // boundaries; these prove the real end-to-end wiring through an actual
   // child process, writing to stderr in two separate calls (separated by a
@@ -95,13 +94,13 @@ describe("spawnCapture", () => {
     expect(result.stderrTail).not.toContain(secret);
   });
 
-  // Blocker B1 re-review, TEST I: a real child process forced into genuine
-  // separate `data` events for a single oversized, unterminated line -- one
-  // write pushes the line past the internal bound with no newline, a later
-  // write (across a real macrotask boundary) appends a known secret and
-  // finally terminates the line. Proves the fail-closed placeholder path
-  // through the actual wiring, on BOTH sinks: the live relay to this test
-  // process's own stderr, and the captured/persisted tail.
+  // A real child process forced into genuine separate `data` events for a
+  // single oversized, unterminated line -- one write pushes the line past the
+  // internal bound with no newline, a later write (across a real macrotask
+  // boundary) appends a known secret and finally terminates the line. Proves
+  // the fail-closed placeholder path through the actual wiring, on BOTH
+  // sinks: the live relay to this test process's own stderr, and the
+  // captured/persisted tail.
 
   it("suppresses an oversized unterminated line spanning real separate stderr writes on both the live relay and the captured tail", async () => {
     const secret = "sk-real-spawn-oversized-secret-should-not-leak";

@@ -1,21 +1,20 @@
 /**
- * Owner Decision 11 §4-7: strict JSON Content-Type enforcement and a
- * deliberately small request-body size ceiling for credential-mutation
- * requests, enforced at the reading boundary -- the stream is stopped once
- * the limit is exceeded, not just checked after the full body is already
- * buffered. No new body-parsing dependency: a Configure/Replace payload is
- * a single short string, so a small hand-rolled bounded reader is enough
- * (unlike the upload pipeline's much larger, streaming-file requirements).
- * `Content-Length`, when present, is only an early-rejection optimization
- * (Owner Decision 11 §11) -- the actual byte-counted read loop below is
- * what enforces the limit regardless of whether the header is present or
- * accurate.
+ * Strict JSON Content-Type enforcement and a deliberately small request-body
+ * size ceiling for credential-mutation requests, enforced at the reading
+ * boundary -- the stream is stopped once the limit is exceeded, not just
+ * checked after the full body is already buffered. No new body-parsing
+ * dependency: a Configure/Replace payload is a single short string, so a
+ * small hand-rolled bounded reader is enough (unlike the upload pipeline's
+ * much larger, streaming-file requirements). `Content-Length`, when present,
+ * is only an early-rejection optimization -- the actual byte-counted read
+ * loop below is what enforces the limit regardless of whether the header is
+ * present or accurate.
  */
 
 import { ApiError } from "@/lib/http";
 
 // Comfortable JSON-envelope overhead over any plausible API key length --
-// not sized to an assumed maximum key length (Owner Decision 11 §6).
+// not sized to an assumed maximum key length.
 export const MAX_PROVIDER_MUTATION_BODY_BYTES = 8 * 1024;
 
 export async function readBoundedJsonBody(request: Request): Promise<unknown> {

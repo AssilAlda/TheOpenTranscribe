@@ -34,7 +34,10 @@ function uploadRequest(filename: string): Request {
   );
   return new Request("http://localhost/api/jobs", {
     method: "POST",
-    headers: { "content-type": `multipart/form-data; boundary=${BOUNDARY}` },
+    headers: {
+      "content-type": `multipart/form-data; boundary=${BOUNDARY}`,
+      origin: "http://localhost:3000",
+    },
     body,
   });
 }
@@ -120,7 +123,7 @@ describe("GET /api/jobs/:jobId/result", () => {
     const createRes = await createJob(uploadRequest("sample.wav"));
     const { data: created } = await createRes.json();
 
-    // Simulate what the Phase 4 runner does on success.
+    // Simulate what the runner does on success.
     const db: DbClient = openDb(dataDir);
     mkdirSync(join(dataDir, "outputs"), { recursive: true });
     const outputRelative = `outputs/${created.job_id}.txt`;

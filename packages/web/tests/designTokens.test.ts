@@ -237,7 +237,7 @@ describe("design tokens (app/globals.css)", () => {
     expect(brandCss).toMatch(/\.name\s*{[^}]*color:\s*var\(--color-text\);/);
   });
 
-  it("retires --color-sidebar-bg entirely (owner decision to unify all nav-chrome surfaces with the main canvas) -- no dangling definition left behind", () => {
+  it("retires --color-sidebar-bg entirely (design decision to unify all nav-chrome surfaces with the main canvas) -- no dangling definition left behind", () => {
     expect(globalsCss).not.toMatch(/--color-sidebar-bg:\s*#[0-9a-f]{6};/i);
   });
 

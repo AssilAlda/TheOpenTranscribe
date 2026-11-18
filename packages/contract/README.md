@@ -1,12 +1,14 @@
 # TheOpenTranscribe Job Contract
 
 A small, explicit, versioned JSON contract describing a transcription job.
-It is the interface the future web application and background runner will
-exchange job state through — it defines no database, no HTTP layer, and no
-infrastructure. It only describes the shape of a job document.
+It is the interface the web application (`packages/web`) and background
+runner (`packages/runner`) exchange job state through — it defines no
+database, no HTTP layer, and no infrastructure. It only describes the shape
+of a job document.
 
 This package does not implement a runner, a database, or a web server.
-Those arrive in later phases; this contract is what they will agree on.
+Those live in `packages/runner`, `packages/db`, and `packages/web`; this
+contract is what they agree on.
 
 ## Files
 
@@ -27,12 +29,13 @@ QUEUED -> PROCESSING -> COMPLETED
                       -> FAILED
 ```
 
-There is no `INTERRUPTED` status. If a future runner restarts and finds a
-stale `PROCESSING` job, that job is later marked `FAILED` with an explicit
+There is no `INTERRUPTED` status. If the runner restarts and finds a
+stale `PROCESSING` job, that job is marked `FAILED` with an explicit
 reason in `error.message` — it is not retried automatically, because the
 underlying transcription call may already have run and cost provider
-credits. A manual retry creates a new `QUEUED` job. None of that behavior is
-implemented here; the contract is just shaped to remain compatible with it.
+credits. A manual retry creates a new `QUEUED` job. That behavior lives in
+`packages/runner` (see `src/recovery.ts`), not here; the contract is just
+shaped to remain compatible with it.
 
 ## Document shape
 
@@ -53,12 +56,11 @@ implemented here; the contract is just shaped to remain compatible with it.
 ```
 
 - `input` describes what to transcribe. `media_path` is required and must be
-  relative to a future `DATA_DIR` (no leading `/`, no `..` segments) —
-  never an arbitrary filesystem path. `language` is optional and, if
-  present, must be a non-empty string; it is forwarded to the transcription
-  provider as-is (matching Phase 1's `OpenAIProvider.transcribe`, which
-  passes whatever language string it's given straight through to the
-  provider). The contract does not impose a fixed language allowlist — that
+  relative to `DATA_DIR` (no leading `/`, no `..` segments) — never an
+  arbitrary filesystem path. `language` is optional and, if present, must be
+  a non-empty string; it is forwarded to the transcription provider as-is
+  (matching the transcriber's `OpenAIProvider.transcribe`, which passes
+  whatever language string it's given straight through to the provider). The contract does not impose a fixed language allowlist — that
   would be a product/CLI-level decision, not a contract-level one. Omit the
   field for automatic language detection.
 - `result` is required and populated only when `status` is `COMPLETED`; it

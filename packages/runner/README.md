@@ -1,12 +1,12 @@
 # @theopentranscribe/runner
 
-Phase 4: lightweight, single-worker TypeScript job runner.
+Lightweight, single-worker TypeScript job runner.
 
 Owns:
 - Polling `packages/db` for `QUEUED` jobs and atomically claiming one at a time.
-- Invoking the Phase 1 Python transcriber as a subprocess (via the thin
-  `transcriber.run_job` adapter added alongside the standalone CLI — see
-  `packages/transcriber/transcriber/run_job.py`).
+- Invoking the Python transcriber (`packages/transcriber`) as a subprocess
+  (via the thin `transcriber.run_job` adapter added alongside the standalone
+  CLI — see `packages/transcriber/transcriber/run_job.py`).
 - Writing `COMPLETED`/`FAILED` results back through `packages/db`.
 - Marking stale `PROCESSING` jobs `FAILED` (never auto-retried) on startup.
 
@@ -47,8 +47,7 @@ npm start
 Single-worker: claims and fully processes one job at a time, then
 immediately attempts to claim the next one before falling back to polling on
 an empty queue. No configurable concurrency, no subprocess wall-clock
-timeout — both are locked v1 simplicity decisions (see
-`docs/ARCHITECTURE.md` / `docs/IMPLEMENTATION_PLAN.md`), not permanent
+timeout — both are deliberate v1 simplicity decisions, not permanent
 architectural limits.
 
 ## Scripts

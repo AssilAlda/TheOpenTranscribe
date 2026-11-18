@@ -1,14 +1,14 @@
-"""Phase 4 subprocess entrypoint for the TypeScript runner.
+"""Subprocess entrypoint for the TypeScript runner (packages/runner).
 
-Not the Phase 1 standalone CLI (see cli.py) — cli.py's user-facing behavior,
+Not the standalone CLI (see cli.py) — cli.py's user-facing behavior,
 language choices, and output-file placement are intentionally left untouched
 by this module. This is a separate, narrow adapter: explicit input path in,
 explicit output path out, an unrestricted language string, and a reliable
 exit code, so an external caller doesn't have to parse human-readable CLI
 output to know whether transcription succeeded.
 
-Reuses the existing Phase 1 engine (transcribe_media, OpenAIProvider) rather
-than reimplementing transcription.
+Reuses the existing transcription engine (transcribe_media, OpenAIProvider)
+rather than reimplementing transcription.
 """
 
 import argparse
@@ -27,7 +27,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         prog="theopentranscribe-run-job",
         description=(
             "Transcribe one media file to one explicit output path. "
-            "Internal subprocess entrypoint for the Phase 4 runner; not for direct end-user use."
+            "Internal subprocess entrypoint for the job runner; not for direct end-user use."
         ),
     )
     parser.add_argument("--input", required=True, help="Absolute path to the input media file.")
@@ -67,17 +67,16 @@ def _write_output_atomically(text: str, output_path: Path) -> None:
 def _safe_failure_message(exc: BaseException) -> str:
     """A safe, non-secret diagnostic for an unexpected transcription failure.
 
-    Owner Decision 10 (Phase 7 secret redaction): never stringify the raw
-    exception directly. A provider SDK exception's own `str(exc)` can embed
-    request/response details (e.g. headers, request bodies) this module has
-    no way to fully audit for secret material — so only the exception's
-    type name and, when present as a plain safe attribute (common on
-    httpx/openai SDK exceptions), its HTTP status code are surfaced. Both
-    are safe, non-secret diagnostic categories on their own. This text
-    reaches the Phase 4 runner's stderr capture, which applies its own
-    centralized redaction as a further backstop (packages/runner/src/
-    spawnCapture.ts) — this is the first, source-level layer, not the only
-    one.
+    Secret redaction: never stringify the raw exception directly. A provider
+    SDK exception's own `str(exc)` can embed request/response details (e.g.
+    headers, request bodies) this module has no way to fully audit for secret
+    material — so only the exception's type name and, when present as a plain
+    safe attribute (common on httpx/openai SDK exceptions), its HTTP status
+    code are surfaced. Both are safe, non-secret diagnostic categories on
+    their own. This text reaches the runner's stderr capture, which applies
+    its own centralized redaction as a further backstop
+    (packages/runner/src/spawnCapture.ts) — this is the first, source-level
+    layer, not the only one.
     """
     exc_type = type(exc).__name__
     status_code = getattr(exc, "status_code", None)

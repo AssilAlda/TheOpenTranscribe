@@ -1,18 +1,17 @@
 /**
  * Read/write/remove primitives for the managed `provider-config.json` file.
- * File-safety requirements (Owner Decisions 2, 7, 8, 9a): one canonical
- * path, restrictive permissions (0600 file / 0700 parent dir on POSIX where
- * supported), same-directory temp write, fsync, atomic rename, safe temp
- * cleanup, explicit malformed/corrupt-file handling. No interprocess lock
- * (Owner Decision 9a): packages/web is the sole writer, packages/runner is
- * read-only, and atomic same-directory replacement is the only correctness
- * mechanism this v1 relies on -- see the Phase 7 plan's "Decision 9a" for
- * the single-writer invariant this depends on.
+ * File-safety requirements: one canonical path, restrictive permissions
+ * (0600 file / 0700 parent dir on POSIX where supported), same-directory
+ * temp write, fsync, atomic rename, safe temp cleanup, explicit
+ * malformed/corrupt-file handling. No interprocess lock: packages/web is the
+ * sole writer, packages/runner is read-only, and atomic same-directory
+ * replacement is the only correctness mechanism this v1 relies on -- which
+ * in turn depends on that single-writer invariant holding.
  *
- * Blocker B3: writeManagedConfig and removeManagedConfig both refuse to
- * touch an existing file whose schema_version this build doesn't recognize
- * -- see assertNoUnsupportedExistingSchema below. "We don't understand it"
- * is never treated as "safe to overwrite or delete it."
+ * writeManagedConfig and removeManagedConfig both refuse to touch an existing
+ * file whose schema_version this build doesn't recognize -- see
+ * assertNoUnsupportedExistingSchema below. "We don't understand it" is never
+ * treated as "safe to overwrite or delete it."
  */
 
 import { randomBytes } from "node:crypto";
@@ -33,12 +32,12 @@ export function resolveManagedConfigPath(env: NodeJS.ProcessEnv = process.env): 
 }
 
 /**
- * Distinguishes every failure class Owner Decision 7 §10 requires: file
- * missing (not an error -- the normal "no managed credential yet" state),
- * a valid parse, malformed JSON, an unsupported future schema_version (never
- * guessed at or silently overwritten), and a filesystem read error. None of
- * these are ever collapsed into a generic "unconfigured" by this layer --
- * that collapsing decision (if any) belongs to the caller (see resolve.ts).
+ * Distinguishes every required failure class: file missing (not an error --
+ * the normal "no managed credential yet" state), a valid parse, malformed
+ * JSON, an unsupported future schema_version (never guessed at or silently
+ * overwritten), and a filesystem read error. None of these are ever collapsed
+ * into a generic "unconfigured" by this layer -- that collapsing decision (if
+ * any) belongs to the caller (see resolve.ts).
  */
 export type ManagedConfigReadResult =
   | { kind: "missing" }
@@ -90,18 +89,17 @@ export async function readManagedConfig(
 }
 
 /**
- * Blocker B3: the invariant that an unknown/future schema_version must never
- * be overwritten or deleted belongs to the store itself, not to any one
- * caller (a web route today; potentially other callers later) -- so both
+ * The invariant that an unknown/future schema_version must never be
+ * overwritten or deleted belongs to the store itself, not to any one caller
+ * (a web route today; potentially other callers later) -- so both
  * writeManagedConfig and removeManagedConfig call this before touching the
  * file. Only a positively-confirmed unsupported/newer schema_version blocks
  * the mutation; every other pre-existing state (missing, unreadable,
- * malformed JSON, missing schema_version) is left to the mutation to
- * proceed as before -- this deliberately does not broaden into a new
- * malformed-config recovery architecture (Owner Decision 7's existing
- * "Configure replaces a corrupt/unreadable file" UX is unchanged), it only
- * closes the one gap where a schema this build doesn't understand could be
- * silently clobbered.
+ * malformed JSON, missing schema_version) is left to the mutation to proceed
+ * as before -- this deliberately does not broaden into a new malformed-config
+ * recovery architecture (the existing "Configure replaces a
+ * corrupt/unreadable file" UX is unchanged), it only closes the one gap where
+ * a schema this build doesn't understand could be silently clobbered.
  */
 async function assertNoUnsupportedExistingSchema(path: string): Promise<void> {
   let raw: string;
@@ -147,7 +145,7 @@ async function ensureConfigDirExists(env: NodeJS.ProcessEnv): Promise<string> {
  * concurrent web request) can therefore only ever observe the complete
  * previous document or the complete new one -- never a partial write. Two
  * near-simultaneous calls resolve as last-completed-atomic-write-wins, by
- * design (Owner Decision 9a) -- no interprocess lock is taken here.
+ * design -- no interprocess lock is taken here.
  */
 export async function writeManagedConfig(
   openaiApiKey: string,
@@ -187,8 +185,7 @@ export async function writeManagedConfig(
 /**
  * Removes the managed configuration file if present. A no-op, not an error,
  * if it's already absent (e.g. concurrent Remove calls, or Remove after the
- * file was never created) -- matches Owner Decision 9a §10's accepted
- * concurrency semantics for Remove.
+ * file was never created) -- the accepted concurrency semantics for Remove.
  */
 export async function removeManagedConfig(env: NodeJS.ProcessEnv = process.env): Promise<void> {
   const path = resolveManagedConfigPath(env);

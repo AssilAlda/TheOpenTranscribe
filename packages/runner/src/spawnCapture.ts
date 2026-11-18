@@ -15,7 +15,7 @@ export interface SpawnCaptureResult {
  * Generic subprocess runner: relays child stdout/stderr to this process's
  * own stdout/stderr (so operator logs show progress live) while also
  * capturing a bounded tail of stderr to surface as a failure reason.
- * No wall-clock timeout — a locked Phase 4 v1 decision; a long-running
+ * No wall-clock timeout — a deliberate v1 decision; a long-running
  * legitimate transcription is not killed, and a genuinely stuck runner is
  * expected to be restarted by the operator (which triggers stale-PROCESSING
  * recovery on the next startup).
@@ -27,19 +27,18 @@ export interface SpawnCaptureResult {
  * SIGINT/SIGTERM from the operator) can ask an in-flight subprocess to stop
  * instead of orphaning it. See index.ts.
  *
- * `knownSecrets` (Owner Decision 10 §10): the credential(s) already resolved
- * in-memory for this job's spawn, redacted by exact value ahead of generic
- * pattern matching. Never persisted/logged/cached by this function -- only
- * used transiently to build the redaction pass for this one call.
+ * `knownSecrets`: the credential(s) already resolved in-memory for this job's
+ * spawn, redacted by exact value ahead of generic pattern matching. Never
+ * persisted/logged/cached by this function -- only used transiently to build
+ * the redaction pass for this one call.
  *
- * Owner Decision 10, stream-safe redaction (blocker B1): stderr is fed
- * through a single StreamRedactor (see streamRedactor.ts) shared by both
- * sinks below -- the live relay to this process's own stderr, and the
- * bounded tail later persisted into jobs.error_message. There is
- * deliberately no "raw to logs, redacted to DB" split (Decision 10 §9), and
- * no per-chunk-only redaction that could let a credential split across a
- * chunk boundary slip through unredacted -- see streamRedactor.ts for why
- * line-buffering closes that gap rather than just narrowing it.
+ * Stream-safe redaction: stderr is fed through a single StreamRedactor (see
+ * streamRedactor.ts) shared by both sinks below -- the live relay to this
+ * process's own stderr, and the bounded tail later persisted into
+ * jobs.error_message. There is deliberately no "raw to logs, redacted to DB"
+ * split, and no per-chunk-only redaction that could let a credential split
+ * across a chunk boundary slip through unredacted -- see streamRedactor.ts
+ * for why line-buffering closes that gap rather than just narrowing it.
  */
 export function spawnCapture(
   command: string,
