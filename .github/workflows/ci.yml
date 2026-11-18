@@ -202,7 +202,7 @@ jobs:
   install-script:
     runs-on: ubuntu-latest
     env:
-      THEOPENTRANSCRIBE_DIR: ${{ runner.temp }}/theopentranscribe
+      THEOPENTRANSCRIBE_DIR: /tmp/theopentranscribe-ci
       THEOPENTRANSCRIBE_NO_OPEN: "1"
     steps:
       - uses: actions/checkout@v4
