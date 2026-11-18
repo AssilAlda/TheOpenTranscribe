@@ -1,13 +1,13 @@
 /**
- * DATA_DIR resolution and path-safety helpers for Phase 3 application-managed
+ * DATA_DIR resolution and path-safety helpers for application-managed
  * storage. Mirrors the DATA_DIR-relative path rules already enforced by the
- * Phase 2 contract (packages/contract/python/theopentranscribe_contract/job.py:
+ * job contract (packages/contract/python/theopentranscribe_contract/job.py:
  * _is_data_dir_relative_path) so the same shape of path is accepted on both
  * sides of the contract.
  *
- * Scope: this module only knows about the DATA_DIR layout locked for Phase 3
+ * Scope: this module only knows about the fixed DATA_DIR layout
  * (uploads/, outputs/, the sqlite file). It does not perform upload handling,
- * size limits, or extension allowlisting — that is Phase 5's job.
+ * size limits, or extension allowlisting — that is packages/web's job.
  */
 
 import { mkdirSync } from "node:fs";
@@ -22,7 +22,7 @@ export class PathSafetyError extends Error {}
 /**
  * Resolves and returns an absolute DATA_DIR path. Requires an explicit path
  * (no implicit default) — this package does not decide what DATA_DIR should
- * default to; that is a decision for whatever process wires it up (a future
+ * default to; that is a decision for whatever process wires it up (the
  * runner/web app, or a test).
  */
 export function resolveDataDir(dataDirPath: string): string {
@@ -37,7 +37,7 @@ export function dbFilePath(dataDir: string): string {
 }
 
 /**
- * Ensures the locked Phase 3 DATA_DIR layout exists: DATA_DIR itself, plus
+ * Ensures the fixed DATA_DIR layout exists: DATA_DIR itself, plus
  * its uploads/ and outputs/ subdirectories. The sqlite file and its WAL/SHM
  * siblings are created by SQLite itself on first open, not here.
  */

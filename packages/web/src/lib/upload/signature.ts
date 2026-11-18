@@ -1,9 +1,9 @@
 /**
  * Lightweight, streaming-compatible file-signature ("magic byte") checks.
- * Locked at Phase 5 phase start (docs/ARCHITECTURE.md §15): hardening on top
- * of the extension allowlist, not full media-validity verification, and not
- * a single "one magic sequence per extension" assumption -- related
- * extensions are grouped into their real container family.
+ * Hardening on top of the extension allowlist, not full media-validity
+ * verification, and not a single "one magic sequence per extension"
+ * assumption -- related extensions are grouped into their real container
+ * family.
  *
  * Actual guarantee per family (stated plainly, not oversold):
  * - mpeg-audio (.mp3/.mpga/.mpeg): leading ID3v2 tag OR a valid MPEG audio

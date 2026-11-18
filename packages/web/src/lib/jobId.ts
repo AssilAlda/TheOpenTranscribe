@@ -1,5 +1,5 @@
 /**
- * Mirrors the Phase 2 contract's job_id pattern exactly (packages/contract,
+ * Mirrors the job contract's job_id pattern exactly (packages/contract,
  * schema/job.v1.schema.json: RFC 9562 UUID, versions 1-8). A route-supplied
  * job_id must pass this same check before it is used in a DB query or in
  * building an output path — never a second, incompatible UUID rule.

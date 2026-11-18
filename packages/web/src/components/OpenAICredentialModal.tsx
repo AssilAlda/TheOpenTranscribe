@@ -17,18 +17,18 @@ type SaveResult =
 export interface OpenAICredentialModalProps {
   mode: CredentialModalMode | null;
   onClose: () => void;
-  /** Called after ANY mutation attempt settles (success, invalid, or transport failure) so the caller can re-fetch safe status (Owner Decision 5 §9, CORRECTION 2 §2C). */
+  /** Called after ANY mutation attempt settles (success, invalid, or transport failure) so the caller can re-fetch safe status. */
   onSettled: () => void;
 }
 
 /**
- * Owner Decision 5: dedicated native <dialog> for Configure/Replace, reusing
+ * Dedicated native <dialog> for Configure/Replace, reusing
  * JobDetailModal's established interaction pattern (showModal, Escape-to-
  * close, inert background, deterministic focus restoration, body-scroll
  * lock with two independent release paths) rather than a second modal
  * architecture. Always starts with a BLANK input -- the existing stored key
- * is never fetched or populated (Owner Decision 5 §3, §15): there is no
- * "edit existing value" semantics, only "submit a new candidate."
+ * is never fetched or populated: there is no "edit existing value" semantics,
+ * only "submit a new candidate."
  */
 export function OpenAICredentialModal({ mode, onClose, onSettled }: OpenAICredentialModalProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -108,11 +108,11 @@ export function OpenAICredentialModal({ mode, onClose, onSettled }: OpenAICreden
         body: JSON.stringify({ openai_api_key: trimmed }),
       });
     } catch {
-      // CORRECTION 2 §2B: the browser's own connection to TheOpenTranscribe
-      // failed before any server response was read. This is NOT a Decision
-      // 4 validation outcome -- never claim "saved, unverified" here. The
-      // caller reconciles durable state via a status refetch once the
-      // modal closes (onSettled below).
+      // The browser's own connection to TheOpenTranscribe failed before any
+      // server response was read. This is NOT a server-side key-validation
+      // outcome -- never claim "saved, unverified" here. The caller
+      // reconciles durable state via a status refetch once the modal closes
+      // (onSettled below).
       setSubmitting(false);
       setResult({ kind: "transport_error" });
       return;

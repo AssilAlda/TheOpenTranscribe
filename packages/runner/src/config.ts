@@ -11,9 +11,9 @@ export class RunnerConfigError extends Error {}
 /**
  * Reads runner configuration from the environment. DATA_DIR and
  * TRANSCRIBER_PYTHON_BIN have no sensible default (both are deployment-
- * specific paths) and are required; the poll interval defaults to 5s per
- * the locked Phase 4 decision and falls back to that default on invalid
- * input rather than failing startup.
+ * specific paths) and are required; the poll interval defaults to 5s by
+ * design and falls back to that default on invalid input rather than failing
+ * startup.
  */
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): RunnerConfig {
   const dataDir = env.DATA_DIR;

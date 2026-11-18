@@ -258,8 +258,8 @@ describe("POST /api/provider/openai (Configure/Replace)", () => {
     expect(res.headers.get("Cache-Control")).toBe("no-store");
   });
 
-  // Blocker B3: an unsupported/future schema_version must never be
-  // overwritten by Configure/Replace.
+  // An unsupported/future schema_version must never be overwritten by
+  // Configure/Replace.
 
   it("rejects Configure/Replace against an unsupported/future schema_version, leaving the file byte-for-byte identical", async () => {
     mockValidatedFetch();
@@ -300,8 +300,8 @@ describe("DELETE /api/provider/openai (Remove)", () => {
     expect(res.status).toBe(409);
   });
 
-  // Blocker B3: DELETE is still a destructive mutation -- an
-  // unsupported/future schema_version must never be removed either.
+  // DELETE is still a destructive mutation -- an unsupported/future
+  // schema_version must never be removed either.
 
   it("rejects Remove against an unsupported/future schema_version, leaving the file byte-for-byte identical", async () => {
     const path = writeRawConfig(JSON.stringify({ schema_version: 99, openai_api_key: "sk-future-untouched" }));

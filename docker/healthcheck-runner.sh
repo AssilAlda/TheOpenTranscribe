@@ -1,5 +1,5 @@
 #!/bin/sh
-# Phase 8: Docker HEALTHCHECK for the runner container. The runner has no
+# Docker HEALTHCHECK for the runner container. The runner has no
 # HTTP surface (subprocess-only coupling to the transcriber, per the locked
 # architecture), so liveness is inferred from a heartbeat file touched on a
 # fixed interval by packages/runner/src/index.ts (see heartbeat.ts). The

@@ -13,7 +13,7 @@ import { readBoundedJsonBody } from "@/lib/provider/readJsonBody";
 import { validateOpenAIKey } from "@/lib/provider/validateOpenAIKey";
 
 // Node.js runtime, matching every other Route Handler that touches
-// filesystem/subprocess-adjacent server-side state (Phase 5 precedent).
+// filesystem/subprocess-adjacent server-side state.
 export const runtime = "nodejs";
 
 function isNonEmptyString(value: unknown): value is string {
@@ -21,13 +21,13 @@ function isNonEmptyString(value: unknown): value is string {
 }
 
 /**
- * Blocker B3: writeManagedConfig/removeManagedConfig throw a typed,
- * secret-free ProviderConfigError when an existing managed-config file's
- * schema_version is unsupported/newer than this build understands, so the
- * mutation was refused. Maps that specific, known-safe error to a 409
- * response; every other ProviderConfigError code (e.g. an unrelated
- * configDir misconfiguration) falls through to apiErrorToResponse's generic
- * 500 handling, unchanged from before this fix.
+ * writeManagedConfig/removeManagedConfig throw a typed, secret-free
+ * ProviderConfigError when an existing managed-config file's schema_version
+ * is unsupported/newer than this build understands, so the mutation was
+ * refused. Maps that specific, known-safe error to a 409 response; every
+ * other ProviderConfigError code (e.g. an unrelated configDir
+ * misconfiguration) falls through to apiErrorToResponse's generic 500
+ * handling.
  */
 function providerConfigErrorToResponse(err: unknown): Response | null {
   if (err instanceof ProviderConfigError && err.code === "unsupported_managed_schema") {
@@ -37,9 +37,9 @@ function providerConfigErrorToResponse(err: unknown): Response | null {
 }
 
 /**
- * Rejects a mutation if the environment owns the credential (Owner Decision
- * 2: env is authoritative and UI-locked -- the application never offers to
- * overwrite or remove it). Shared by POST and DELETE below.
+ * Rejects a mutation if the environment owns the credential (env is
+ * authoritative and UI-locked -- the application never offers to overwrite
+ * or remove it). Shared by POST and DELETE below.
  */
 async function assertManagedMutationAllowed(): Promise<void> {
   const resolved = await resolveOpenAIConfig();
@@ -53,9 +53,9 @@ async function assertManagedMutationAllowed(): Promise<void> {
 }
 
 /**
- * GET /api/provider/openai -- safe status only (Owner Decision 2's DTO
- * shape: configured/source/locked). Never returns a raw credential, and is
- * never cacheable (Owner Decision 11 §3).
+ * GET /api/provider/openai -- safe status only (DTO shape:
+ * configured/source/locked). Never returns a raw credential, and is never
+ * cacheable.
  */
 export async function GET(): Promise<Response> {
   try {
@@ -67,12 +67,12 @@ export async function GET(): Promise<Response> {
 }
 
 /**
- * POST /api/provider/openai -- Configure (when unconfigured) or Replace
- * (when already managed): both are the same upsert operation server-side
- * (Owner Decision 4 §6), distinguished only by the Provider UI's copy/entry
- * point (Owner Decision 5), never by a different API shape. Validates the
- * candidate (Owner Decision 4) before persisting; an INVALID candidate is
- * never written and never disturbs an existing managed key.
+ * POST /api/provider/openai -- Configure (when unconfigured) or Replace (when
+ * already managed): both are the same upsert operation server-side,
+ * distinguished only by the Provider UI's copy/entry point, never by a
+ * different API shape. Validates the candidate (validateOpenAIKey) before
+ * persisting; an INVALID candidate is never written and never disturbs an
+ * existing managed key.
  */
 export async function POST(request: Request): Promise<Response> {
   try {
@@ -98,9 +98,8 @@ export async function POST(request: Request): Promise<Response> {
     }
 
     // VALIDATED and UNVERIFIED persist identically -- no structural
-    // difference in storage between the two outcomes (Owner Decision 4 §5,
-    // Owner Decision 7 §5). Only the response below carries the distinction,
-    // and it is never itself persisted (Owner Decision 7 §2-3).
+    // difference in storage between the two outcomes. Only the response
+    // below carries the distinction, and it is never itself persisted.
     await writeManagedConfig(candidate.trim());
 
     const resolvedAfter = await resolveOpenAIConfig();
@@ -115,9 +114,9 @@ export async function POST(request: Request): Promise<Response> {
 
 /**
  * DELETE /api/provider/openai -- removes the managed credential only.
- * Never accepts or requires a credential-bearing body (Owner Decision 11
- * §12) -- the server already owns the managed state, so there is no
- * "prove ownership by sending the key back" round-trip.
+ * Never accepts or requires a credential-bearing body -- the server already
+ * owns the managed state, so there is no "prove ownership by sending the key
+ * back" round-trip.
  */
 export async function DELETE(request: Request): Promise<Response> {
   try {

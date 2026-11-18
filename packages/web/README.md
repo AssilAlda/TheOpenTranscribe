@@ -1,8 +1,7 @@
 # @theopentranscribe/web
 
-Phase 5 Web API (Next.js Route Handlers) + Phase 6 dashboard UI, sharing one
-Next.js application (docs/ARCHITECTURE.md §15 locks Phase 5 and Phase 6 into
-the same package).
+Web API (Next.js Route Handlers) + dashboard UI, sharing one Next.js
+application in a single package.
 
 Owns:
 - Upload handling + validation (extension allowlist, streaming size limit,
@@ -14,8 +13,9 @@ Owns:
   Transcribed Files / Provider), paginated job history, a job detail modal
   (with a direct-URL fallback route), transcript reading/copy/PDF export.
 
-Does **not** own: transcription itself, starting/managing the Phase 4 runner
-process, authentication, credential storage/persistence.
+Does **not** own: transcription itself, starting/managing the runner
+process, authentication, the credential storage/persistence primitives
+themselves (those live in `packages/provider-config`).
 
 ## Setup
 
@@ -50,11 +50,11 @@ DATA_DIR=/path/to/data npm run build && DATA_DIR=/path/to/data npm start
 | `/api/jobs` | `GET` | Paginated job history (`?limit=&offset=`), newest first. |
 | `/api/jobs/:jobId` | `GET` | A single job's current state. |
 | `/api/jobs/:jobId/result` | `GET` | The completed transcript as `text/plain`. `409` if not yet `COMPLETED`. |
-| `/api/jobs/:jobId/result/pdf` | `GET` | (Phase 6, additive) The completed transcript rendered as an on-demand, never-persisted `application/pdf` download. `409` if not yet `COMPLETED`; `422 unsupported_pdf_characters` if the transcript has characters the vendored font can't render. |
+| `/api/jobs/:jobId/result/pdf` | `GET` | The completed transcript rendered as an on-demand, never-persisted `application/pdf` download. `409` if not yet `COMPLETED`; `422 unsupported_pdf_characters` if the transcript has characters the vendored font can't render. |
 | `/` | page | **Transcribe** -- the upload workspace. One focused task: start a transcription. |
 | `/files` | page | **Transcribed Files** -- the full paginated job history/management surface. Row click opens the job detail modal; polling keeps every visible active job live regardless of which page it's on. |
 | `/jobs/:jobId` | page | **Direct/fallback job detail** -- same status/result content as the modal (shared component, no forked logic), reachable via bookmark, direct URL, refresh, or a modified click (new tab/copy link) from a Transcribed Files row. Not the normal interaction path. |
-| `/provider` | page | **Provider** -- Phase 6 UI only. Shows OpenAI as the provider and a disabled API-key field; no in-app credential storage yet (see below). |
+| `/provider` | page | **Provider** -- configure, replace, or remove a managed OpenAI API key, or see that `OPENAI_API_KEY` from the server environment is in use (see below). |
 
 The persistent application shell (a left sidebar on desktop, a bottom tab bar
 on mobile -- `src/components/AppShell.tsx`, `Sidebar.tsx`, `MobileTabBar.tsx`)
@@ -66,7 +66,7 @@ failure, with a real HTTP status code in both cases. `/api/jobs/:jobId/result`
 and `/api/jobs/:jobId/result/pdf` return the transcript/PDF body directly on
 success (not the JSON envelope), still using the JSON error envelope on failure.
 
-## Upload implementation (locked at Phase 5 phase start -- docs/ARCHITECTURE.md §15)
+## Upload implementation
 
 - Extension allowlist: `.mp3 .mp4 .mpeg .mpga .m4a .wav .webm` (case-insensitive).
 - Max size: 100 MiB, enforced **while streaming** (not after full receipt).
@@ -79,10 +79,9 @@ success (not the JSON envelope), still using the JSON error envelope on failure.
   validation succeeds is it atomically renamed to the final
   `<job_id>__<safe_filename>` path and the `QUEUED` row inserted. Any
   failure along the way cleans up its own temp/final file; a hard process
-  crash between rename and DB insert is the one accepted residual risk (see
-  docs/ARCHITECTURE.md §15).
+  crash between rename and DB insert is the one accepted residual risk.
 
-## Phase 6 dashboard
+## Dashboard
 
 - No CSS framework/component library -- `app/globals.css` design tokens
   (CSS custom properties) + CSS Modules per component. React Client
@@ -123,14 +122,13 @@ success (not the JSON envelope), still using the JSON error envelope on failure.
   `text/plain` `/result` endpoint remains the API's canonical transcript
   source, just not a user-facing download link.
 - **Provider page (`/provider`, `src/components/ProviderSettings.tsx`):**
-  presentation only. Shows OpenAI as the provider and the real intended
-  layout (API key field, Save), but the field itself is `disabled` (not
-  just Save) so a key can never be typed in and mistaken for saved; the
-  page states plainly that in-app storage isn't enabled yet and that
-  `OPENAI_API_KEY` in the server environment remains the only working
-  mechanism. No fetch/POST is wired to it at all. Secure credential
-  persistence is a separate, not-yet-approved decision -- see
-  `docs/ARCHITECTURE.md`'s credential-storage OPEN item.
+  the OpenAI API card's Configure/Replace open a native `<dialog>`
+  (`src/components/OpenAICredentialModal.tsx`) and Remove asks for inline
+  confirmation; all of them go through `/api/provider/openai`, and every
+  displayed state comes from that route's safe status response (never a
+  raw key). An `OPENAI_API_KEY` set in the server environment always wins
+  and is shown as locked. The "Connected accounts" section is
+  presentation-only.
 - **PDF export** (`src/lib/pdf/generateTranscriptPdf.ts`, `app/api/jobs/[jobId]/result/pdf/route.ts`):
   generated on demand with `pdfkit`, streamed straight into the HTTP
   response, never written to `DATA_DIR`. Embeds a vendored Noto Sans
@@ -153,8 +151,7 @@ Everything DB-shaped reuses `packages/db` directly: `openDb`, `jobs`,
 `jobDocumentToRow`, `rowToJobDocument`, and the `DATA_DIR` path-safety
 helpers (`resolveWithinDataDir`, `buildUploadRelativePath`,
 `sanitizeFilenameSegment`, etc.). No new persistence or contract-validation
-layer was introduced (see docs/ARCHITECTURE.md §15's "validation/schema
-library" decision).
+layer was introduced (no separate validation/schema library is used).
 
 `@theopentranscribe/db` is consumed as a compiled package (`dist/`, built via
 its own `prepare`/`build` script) rather than raw TypeScript source, because
@@ -173,12 +170,11 @@ its README) -- do that first if this package's install/build ever fails with
 - `npm run dev` / `npm run build` / `npm start` -- Next.js dev/build/serve.
 - `npm test` -- Vitest suite: unit tests for validation/parsing/PDF-generation
   logic, route-handler tests calling the exported `GET`/`POST` functions
-  directly against a real temporary `DATA_DIR`, and (Phase 6) component/hook/
+  directly against a real temporary `DATA_DIR`, and component/hook/
   page tests. Component/hook/page tests opt into a `jsdom` environment
   individually via a `// @vitest-environment jsdom` docblock
-  (`tests/components/`, `tests/hooks/`, `tests/pages/`) -- the existing
-  Phase 5 lib/route tests keep running in the default Node environment,
-  untouched. `@testing-library/react`, `@testing-library/jest-dom`, and
+  (`tests/components/`, `tests/hooks/`, `tests/pages/`) -- the lib/route
+  tests keep running in the default Node environment. `@testing-library/react`, `@testing-library/jest-dom`, and
   `@testing-library/user-event` are dev-only, jsdom-only dependencies; no
   Playwright/Cypress/Storybook. `tests/setup/jsdomSetup.ts` also carries a
   small test-only polyfill for `HTMLDialogElement`'s `showModal`/`show`/
