@@ -76,10 +76,59 @@ Read it, copy it, or save it as a PDF — all from an app that runs on your own 
 
 > [!NOTE]
 > **You need two things:**
-> 1. **Docker** — [Docker Desktop](https://www.docker.com/products/docker-desktop) or [OrbStack](https://orbstack.dev) on Mac, Docker Desktop on Windows, [Docker Engine](https://docs.docker.com/engine/install) on Linux.
-> 2. **An OpenAI API key** — create one at [platform.openai.com/api-keys](https://platform.openai.com/api-keys).
+> 1. **Docker**, installed and running: [Docker Desktop](https://www.docker.com/products/docker-desktop) or [OrbStack](https://orbstack.dev) on Mac, [Docker Engine](https://docs.docker.com/engine/install) on Linux, Docker Desktop on Windows.
+> 2. **An OpenAI API key**: create one at [platform.openai.com/api-keys](https://platform.openai.com/api-keys).
 
-**Already comfortable with Docker?** These three commands are all you need:
+**Install with one command.** Paste this into your terminal:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/AssilAlda/TheOpenTranscribe/main/install.sh | bash
+```
+
+That's it. The app opens at **http://localhost:3000**. Click **Provider**, paste your API key, and upload a file. 🎉
+
+<details>
+<summary><b>🔍 What does the installer do?</b></summary>
+
+<br>
+
+It never asks for your password and installs nothing outside one folder. It:
+
+1. Checks that Docker is installed and running, and tells you how to fix it if not.
+2. Creates `~/theopentranscribe` with a `docker-compose.yml` and a `.env` settings file.
+3. Downloads the prebuilt app images from GitHub Container Registry. Nothing is built on your computer.
+4. Starts the app, waits until it's ready, and opens it in your browser.
+
+Run the same command again at any time to **update**. Your transcripts and settings are kept.
+
+Prefer to read it first? [`install.sh`](install.sh) is short and commented.
+
+</details>
+
+<details>
+<summary><b>👣 New to the terminal? Step-by-step guide</b></summary>
+
+<br>
+
+**Step 1. Install Docker.** Install Docker Desktop or OrbStack (see the note above) and open it. Wait until it says it's running.
+
+**Step 2. Open a terminal.**
+- **Mac:** press <kbd>⌘</kbd> + <kbd>Space</kbd>, type **Terminal**, press <kbd>Enter</kbd>.
+- **Windows:** install [WSL](https://learn.microsoft.com/windows/wsl/install), turn on *WSL integration* in Docker Desktop's settings, then open **Ubuntu** from the Start menu.
+- **Linux:** open your terminal app.
+
+**Step 3. Paste the install command** from above and press <kbd>Enter</kbd>. The first time takes a minute or two while the app downloads.
+
+**Step 4. Add your API key.** In the app that opens, click **Provider**, paste your OpenAI API key and click **Save**.
+
+**Step 5. Transcribe a file.** Click **Upload files**, choose an audio or video file (up to 100 MB), then open **Transcribed files** to see the result.
+
+</details>
+
+<details>
+<summary><b>🛠️ Developers: build from source instead</b></summary>
+
+<br>
 
 ```bash
 git clone https://github.com/AssilAlda/TheOpenTranscribe.git && cd TheOpenTranscribe
@@ -87,84 +136,29 @@ cp .env.example .env
 docker compose up -d --build
 ```
 
-Then open **http://localhost:3000**, add your API key under **Provider**, and upload a file. 🎉
-
-<details>
-<summary><b>👣 New to this? Follow the step-by-step guide</b></summary>
-
-<br>
-
-**Step 1 — Install Docker**
-
-Install and open Docker Desktop or OrbStack (see the note above). Make sure Docker is running before you continue.
-
-**Step 2 — Download the project**
-
-Open a terminal and run:
-
-```bash
-git clone https://github.com/AssilAlda/TheOpenTranscribe.git
-cd TheOpenTranscribe
-```
-
-Run all the next commands from this folder.
-
-**Step 3 — Create the settings file**
-
-```bash
-cp .env.example .env
-```
-
-You don't need to change anything in this file.
-
-**Step 4 — Start the app**
-
-```bash
-docker compose up -d --build
-```
-
-The first time takes a few minutes. You may see red text while it builds — that's normal.
-
-**Step 5 — Open the app**
-
-Open **http://localhost:3000** in your browser.
-
-**Step 6 — Add your API key**
-
-Click **Provider** in the menu, paste your OpenAI API key and click **Save**.
-
-**Step 7 — Transcribe a file**
-
-Click **Upload files**, choose an audio or video file (up to 100 MB), then open **Transcribed files** to see your result.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for running the packages without Docker.
 
 </details>
 
-### Stop and start again
+### Stop, start and update
 
 | What you want | Command |
 |---|---|
-| ⏹️ Stop the app | `docker compose down` |
-| ▶️ Start it again | `docker compose up -d` |
-| 🔄 Update to the latest version | `git pull && docker compose up -d --build` |
+| ⏹️ Stop the app | `cd ~/theopentranscribe && docker compose down` |
+| ▶️ Start it again | `cd ~/theopentranscribe && docker compose up -d` |
+| 🔄 Update to the latest version | Run the install command again |
+| 📌 Install a specific version | `curl -fsSL …/install.sh \| THEOPENTRANSCRIBE_VERSION=1.0.0 bash` |
 
 > [!TIP]
-> Your transcripts are kept in a Docker volume, so they are still there after you stop or update the app.
+> Your transcripts are kept in a Docker volume, so they are still there after you stop, restart or update the app.
 
 ## 🛟 Troubleshooting
 
 <details>
-<summary><b>"no configuration file provided"</b></summary>
+<summary><b>"Docker is not installed" or "Docker is installed but not running"</b></summary>
 <br>
 
-You're not in the project folder. Run `cd TheOpenTranscribe` and try again.
-
-</details>
-
-<details>
-<summary><b>"failed to connect to the docker API"</b></summary>
-<br>
-
-Docker isn't running. Open Docker Desktop or OrbStack and try again.
+Install Docker Desktop or OrbStack, open it, wait until it's running, and run the install command again.
 
 If you use Colima:
 
@@ -176,10 +170,32 @@ docker context use colima
 </details>
 
 <details>
+<summary><b>"Port 3000 is already used by another program"</b></summary>
+<br>
+
+Something else is using port 3000. Install on another port instead:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/AssilAlda/TheOpenTranscribe/main/install.sh | THEOPENTRANSCRIBE_PORT=3001 bash
+```
+
+The app then opens at http://localhost:3001.
+
+</details>
+
+<details>
+<summary><b>"no configuration file provided"</b></summary>
+<br>
+
+You're not in the app folder. Run `cd ~/theopentranscribe` first, then try again.
+
+</details>
+
+<details>
 <summary><b>A file stays on "Queued"</b></summary>
 <br>
 
-The background worker isn't running. Run `docker compose ps` and check that both **web** and **runner** are running.
+The background worker isn't running. Run `cd ~/theopentranscribe && docker compose ps` and check that both **web** and **runner** are running. Running the install command again restarts anything that stopped.
 
 </details>
 
@@ -196,7 +212,7 @@ Your API key is probably missing or wrong. Open **Provider** and check your key.
 > [!IMPORTANT]
 > **TheOpenTranscribe has no login.** It's built for one person on their own computer.
 > - By default it only accepts connections from **your own computer** (`127.0.0.1`).
-> - To use it from other devices on your home network, see `THEOPENTRANSCRIBE_BIND` in [`.env.example`](.env.example). Anyone who can reach the app can use your API key.
+> - To use it from other devices on your home network, set `THEOPENTRANSCRIBE_BIND=0.0.0.0` in `~/theopentranscribe/.env` and run the install command again. Anyone who can reach the app can use your API key.
 > - **Never expose it to the internet** without extra protection, such as a VPN or a reverse proxy with login.
 
 > [!WARNING]
