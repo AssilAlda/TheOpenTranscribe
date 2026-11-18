@@ -5,7 +5,11 @@ from pathlib import Path
 CHUNK_SECONDS = 8 * 60
 CHUNK_OVERLAP_SECONDS = 3
 
-SUPPORTED_EXTENSIONS = {".mp4", ".mov", ".m4a", ".mp3", ".wav"}
+# Everything is decoded by ffmpeg into WAV chunks, so any container ffmpeg
+# can read works here. Must stay a superset of the web upload allowlist
+# (packages/web/src/lib/upload/constants.ts), or uploads that the web app
+# accepts will fail in the runner.
+SUPPORTED_EXTENSIONS = {".mp4", ".mov", ".m4a", ".mp3", ".wav", ".mpeg", ".mpga", ".webm"}
 
 
 def find_media_files(path: Path) -> list[Path]:

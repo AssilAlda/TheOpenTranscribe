@@ -20,7 +20,7 @@ theopentranscribe path/to/file.mp4 --language sv
 ```
 
 `--language` accepts `sv` or `en`; omit it for automatic language detection.
-Supported input types: `.mp4`, `.mov`, `.m4a`, `.mp3`, `.wav`. Passing a
+Supported input types: `.mp4`, `.mov`, `.m4a`, `.mp3`, `.wav`, `.mpeg`, `.mpga`, `.webm`. Passing a
 folder processes every supported file in it (non-recursive) and also writes
 one combined transcript for the folder.
 
