@@ -1,58 +1,51 @@
 # @theopentranscribe/runner
 
-Lightweight, single-worker TypeScript job runner.
+Part of [TheOpenTranscribe](../../README.md).
 
-Owns:
-- Polling `packages/db` for `QUEUED` jobs and atomically claiming one at a time.
-- Invoking the Python transcriber (`packages/transcriber`) as a subprocess
-  (via the thin `transcriber.run_job` adapter added alongside the standalone
-  CLI — see `packages/transcriber/transcriber/run_job.py`).
-- Writing `COMPLETED`/`FAILED` results back through `packages/db`.
-- Marking stale `PROCESSING` jobs `FAILED` (never auto-retried) on startup.
+The background worker. It picks up queued jobs one at a time, runs the [transcriber](../transcriber), and saves the result.
 
-Does **not** own: HTTP/API, UI, credential storage, auth, transcription logic
-itself (that stays in `packages/transcriber`).
+### What it does
 
-## Setup
+- Polls the database for `QUEUED` jobs and claims one atomically.
+- Runs `python -m transcriber.run_job` as a subprocess, with secrets redacted from anything it logs.
+- Marks the job `COMPLETED` or `FAILED`.
+- On startup, marks any job left in `PROCESSING` by a crash as `FAILED`. Jobs are never retried automatically, since the provider may already have charged for the first attempt.
+- Touches a heartbeat file every 15 seconds for the Docker health check.
 
-Depends on `@theopentranscribe/db` via a local `file:../db` reference —
-**install/build `packages/db` first** (`cd ../db && npm install`; its own
-`prepare` script builds the `dist/` this package resolves against). See
-`packages/db/README.md`'s "Consumption" section for why.
+One job at a time, by design: no concurrency setting and no subprocess timeout.
 
-```
+### Setup
+
+Install [`db`](../db) and [`provider-config`](../provider-config) first. This package depends on their build output.
+
+```bash
 cd packages/db && npm install
+cd ../provider-config && npm install --include=dev && npm run build
 cd ../runner && npm install
 ```
 
-## Running
+### Running
 
-```
+```bash
 DATA_DIR=/path/to/data \
-TRANSCRIBER_PYTHON_BIN=/path/to/TheOpenTranscribe/packages/transcriber/.venv/bin/python \
+TRANSCRIBER_PYTHON_BIN=/path/to/packages/transcriber/.venv/bin/python \
 npm start
 ```
 
-- `DATA_DIR` — required. Same `DATA_DIR` used by `packages/db`.
-- `TRANSCRIBER_PYTHON_BIN` — required. Path to the `packages/transcriber`
-  virtualenv's `python` executable (must have the `theopentranscribe`
-  package installed editable — `pip install -e ".[dev]"` — and `openai` /
-  `python-dotenv` available).
-- `RUNNER_POLL_INTERVAL_MS` — optional, defaults to `5000`. Falls back to the
-  default on invalid input.
-- `OPENAI_API_KEY` must already be set in the runner process's own
-  environment — the runner never reads, stores, or generates it; it only
-  inherits `process.env` when spawning the subprocess.
+| Variable | Required | Description |
+|---|---|---|
+| `DATA_DIR` | Yes | Same folder the web app uses. |
+| `TRANSCRIBER_PYTHON_BIN` | Yes | The Python in the transcriber's virtualenv. |
+| `OPENAI_API_KEY` | No | If set, always used. Otherwise the key saved in the app's Provider page is used. |
+| `THEOPENTRANSCRIBE_CONFIG_DIR` | No | Where the saved key lives. See [`provider-config`](../provider-config). |
+| `RUNNER_POLL_INTERVAL_MS` | No | How often to check for new jobs. Default `5000`. |
 
-Single-worker: claims and fully processes one job at a time, then
-immediately attempts to claim the next one before falling back to polling on
-an empty queue. No configurable concurrency, no subprocess wall-clock
-timeout — both are deliberate v1 simplicity decisions, not permanent
-architectural limits.
+The API key is looked up again for every job, so a key saved in the app works without restarting the runner.
 
-## Scripts
+### Scripts
 
-- `npm start` — runs the runner (`tsx src/index.ts`).
-- `npm test` — Vitest suite, including a real (unmocked) subprocess-spawn
-  integration test standing in for the Python entrypoint.
-- `npm run typecheck` — `tsc --noEmit`.
+| Command | Description |
+|---|---|
+| `npm start` | Start the runner |
+| `npm test` | Run the tests, including a real subprocess integration test |
+| `npm run typecheck` | Type-check with `tsc` |

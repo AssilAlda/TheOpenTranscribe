@@ -1,30 +1,45 @@
-# TheOpenTranscribe Transcription Engine
+# theopentranscribe (CLI)
 
-The transcription engine and CLI for [TheOpenTranscribe](../../README.md).
+Part of [TheOpenTranscribe](../../README.md).
 
-## Install (development)
+The Python transcription engine, also usable on its own as a command-line tool. Splits media into chunks with ffmpeg, transcribes them with OpenAI's `gpt-4o-transcribe`, and stitches the result back together.
 
-Requires Python 3.13 or newer, plus `ffmpeg` and `ffprobe` on `PATH`, and an
-`OPENAI_API_KEY` (see the repository root `.env.example`).
+### Installation
+
+Requires Python 3.13+ and `ffmpeg` / `ffprobe` on your `PATH`.
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
+cd packages/transcriber
+python3 -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
 ```
 
-## Usage
+Set your API key in the environment, or in a `.env` file in the folder you run it from:
 
 ```bash
-theopentranscribe path/to/file.mp4 --language sv
+export OPENAI_API_KEY=sk-...
 ```
 
-`--language` accepts `sv` or `en`; omit it for automatic language detection.
-Supported input types: `.mp4`, `.mov`, `.m4a`, `.mp3`, `.wav`, `.mpeg`, `.mpga`, `.webm`. Passing a
-folder processes every supported file in it (non-recursive) and also writes
-one combined transcript for the folder.
+### Usage
 
-## Tests
+```bash
+theopentranscribe recording.mp4                 # one file
+theopentranscribe recording.mp4 --language sv   # force a language (sv or en)
+theopentranscribe ./interviews                  # every supported file in a folder
+```
+
+| Input | Output |
+|---|---|
+| A file | `recording.txt` next to the file |
+| A folder | One `.txt` per file, plus `<folder>.txt` with all transcripts combined |
+
+Supported formats: `.mp4` `.mov` `.m4a` `.mp3` `.wav` `.mpeg` `.mpga` `.webm`. Folders are not searched recursively. Leave out `--language` for automatic detection.
+
+### How the app uses it
+
+The background runner calls `python -m transcriber.run_job` for each job. That entrypoint is internal and not meant to be run by hand.
+
+### Tests
 
 ```bash
 pytest
