@@ -98,7 +98,7 @@ def test_zero_duration_raises_and_creates_no_chunks(monkeypatch, tmp_path):
 
 
 def test_supported_extensions_unchanged():
-    assert SUPPORTED_EXTENSIONS == {".mp4", ".mov", ".m4a", ".mp3", ".wav"}
+    assert SUPPORTED_EXTENSIONS == {".mp4", ".mov", ".m4a", ".mp3", ".wav", ".mpeg", ".mpga", ".webm"}
 
 
 def test_find_media_files_filters_by_extension_and_skips_dotfiles(tmp_path):
@@ -124,3 +124,18 @@ def test_find_media_files_rejects_unsupported_single_file(tmp_path):
     other_file.write_bytes(b"")
 
     assert find_media_files(other_file) == []
+
+
+def test_supported_extensions_cover_web_upload_allowlist():
+    """Every extension the web app accepts must be transcribable by the runner."""
+    import re
+    from pathlib import Path
+
+    constants = (
+        Path(__file__).resolve().parents[2] / "web" / "src" / "lib" / "upload" / "constants.ts"
+    ).read_text()
+    allowlist_block = constants.split("ALLOWED_EXTENSIONS = [", 1)[1].split("]", 1)[0]
+    web_extensions = {f".{ext}" for ext in re.findall(r'"([a-z0-9]+)"', allowlist_block)}
+
+    assert web_extensions, "could not parse the web upload allowlist"
+    assert web_extensions <= SUPPORTED_EXTENSIONS
