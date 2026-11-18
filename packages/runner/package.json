@@ -1,7 +1,7 @@
 {
   "name": "@theopentranscribe/runner",
   "version": "0.1.0",
-  "description": "Phase 4: lightweight TypeScript job runner. Polls packages/db for QUEUED jobs and invokes the Phase 1 Python transcriber as a subprocess.",
+  "description": "Lightweight TypeScript job runner. Polls packages/db for QUEUED jobs and invokes the Python transcriber as a subprocess.",
   "type": "module",
   "main": "./src/index.ts",
   "private": true,

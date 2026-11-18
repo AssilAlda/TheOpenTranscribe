@@ -130,7 +130,7 @@ describe("writeManagedConfig", () => {
     expect(mode).toBe(0o600);
   });
 
-  // Blocker B3: an unknown/future schema_version must never be overwritten.
+  // An unknown/future schema_version must never be overwritten.
 
   it("refuses to overwrite an existing unsupported/future schema_version, leaving the file byte-for-byte identical", async () => {
     const dir = makeTempConfigDir();
@@ -209,7 +209,7 @@ describe("removeManagedConfig", () => {
     await expect(removeManagedConfig({ THEOPENTRANSCRIBE_CONFIG_DIR: dir })).resolves.toBeUndefined();
   });
 
-  // Blocker B3: DELETE is still a destructive mutation -- an unknown/future
+  // DELETE is still a destructive mutation -- an unknown/future
   // schema_version must never be removed either.
 
   it("refuses to remove an existing unsupported/future schema_version, leaving the file byte-for-byte identical", async () => {

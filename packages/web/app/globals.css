@@ -1,12 +1,11 @@
 /*
- * Design tokens for TheOpenTranscribe's dashboard (Phase 6).
+ * Design tokens for TheOpenTranscribe's dashboard.
  * Deliberately small: colors, spacing, type, radius, shadow, and the four
  * job-status colors. No CSS framework -- plain custom properties + CSS
- * Modules per component (see docs/ARCHITECTURE.md's Phase 6 section).
- * System font stacks only (no next/font/google): this is a self-hosted app
- * that other people build themselves, so we avoid any build-time network
- * dependency for a web font and get a polished result through spacing,
- * hierarchy, and color instead.
+ * Modules per component. System font stacks only (no next/font/google): this
+ * is a self-hosted app that other people build themselves, so we avoid any
+ * build-time network dependency for a web font and get a polished result
+ * through spacing, hierarchy, and color instead.
  *
  * Token roles (refined in the post-visual-review pass): page background,
  * elevated surface, a slightly sunken surface for secondary panels, primary

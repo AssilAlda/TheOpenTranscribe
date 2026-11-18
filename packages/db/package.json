@@ -1,7 +1,7 @@
 {
   "name": "@theopentranscribe/db",
   "version": "0.1.0",
-  "description": "SQLite persistence (Drizzle + better-sqlite3, WAL) for TheOpenTranscribe job records, shaped around the Phase 2 JSON job contract.",
+  "description": "SQLite persistence (Drizzle + better-sqlite3, WAL) for TheOpenTranscribe job records, shaped around the JSON job contract.",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

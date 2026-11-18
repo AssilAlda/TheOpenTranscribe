@@ -1,10 +1,10 @@
 # @theopentranscribe/db
 
-Phase 3: SQLite schema and local `DATA_DIR` storage for TheOpenTranscribe.
+SQLite schema and local `DATA_DIR` storage for TheOpenTranscribe.
 
 Owns:
 - The `jobs` table (Drizzle + `better-sqlite3`, WAL mode), shaped around the
-  Phase 2 JSON job contract (`packages/contract`).
+  JSON job contract (`packages/contract`).
 - Migrations (`drizzle/`).
 - `DATA_DIR` layout and path-safety helpers for application-managed storage.
 - Mapping between DB rows and a `JobDocument`-shaped object.

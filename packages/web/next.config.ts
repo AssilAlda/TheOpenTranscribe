@@ -11,10 +11,10 @@ const nextConfig: NextConfig = {
   transpilePackages: ["@theopentranscribe/db"],
   // @theopentranscribe/db is a sibling package (packages/db), linked into
   // node_modules via a `file:../db` symlink, matching packages/runner's
-  // existing standalone-package pattern (docs/ARCHITECTURE.md §15's
-  // workspace-tooling decision) -- its real location is outside
-  // packages/web's own root, so both webpack and Turbopack need to be told
-  // the true monorepo root to resolve/trace outside packages/web.
+  // existing standalone-package pattern (no shared workspace tooling, by
+  // design) -- its real location is outside packages/web's own root, so both
+  // webpack and Turbopack need to be told the true monorepo root to
+  // resolve/trace outside packages/web.
   outputFileTracingRoot: REPO_ROOT,
   experimental: {
     externalDir: true,

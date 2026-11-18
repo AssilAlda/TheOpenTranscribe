@@ -104,7 +104,7 @@ describe("JobStatusDetail", () => {
     expect(container.innerHTML).not.toContain("/Users/owner");
     expect(container.innerHTML.toLowerCase()).not.toContain("runner");
 
-    // No retry action in Phase 6.
+    // No retry action yet.
     expect(screen.queryByRole("button", { name: /retry/i })).not.toBeInTheDocument();
   });
 

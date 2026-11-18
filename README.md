@@ -139,9 +139,11 @@ Open Provider and check your key.
 
 ## Good to know
 
-- The app has no login. Only use it on your own computer or home network.
-- Do not put it on the internet without extra protection.
+- The app has no login. By default it only accepts connections from your own computer.
+- To use it from other devices on your home network, see `THEOPENTRANSCRIBE_BIND` in `.env.example`. Anyone who can reach the app can use your API key.
+- Do not put it on the internet without extra protection, such as a VPN or a reverse proxy with login.
 - Your API key is saved as plain text on your computer.
+- Found a security problem? See SECURITY.md.
 
 
 ## Use it from the terminal instead

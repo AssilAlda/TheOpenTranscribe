@@ -27,11 +27,11 @@ function main(): void {
   const loop = startPollLoop(db, config);
 
   // First signal: stop claiming new jobs, let the active one (if any) finish
-  // naturally — no timeout, per the locked Phase 4 decision. Second signal:
-  // additionally ask the active job's subprocess to terminate now (SIGTERM)
-  // instead of leaving it to run orphaned if the operator forces an exit.
-  // Either way, index.ts still only closes the DB and exits after `loop.done`
-  // resolves, i.e. after the in-flight job's terminal DB write completes.
+  // naturally — no timeout, by design. Second signal: additionally ask the
+  // active job's subprocess to terminate now (SIGTERM) instead of leaving it
+  // to run orphaned if the operator forces an exit. Either way, index.ts
+  // still only closes the DB and exits after `loop.done` resolves, i.e. after
+  // the in-flight job's terminal DB write completes.
   let shutdownRequested = false;
   const shutdown = (signal: string) => {
     if (shutdownRequested) {
