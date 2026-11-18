@@ -33,7 +33,10 @@ function uploadRequest(filename: string): Request {
   );
   return new Request("http://localhost/api/jobs", {
     method: "POST",
-    headers: { "content-type": `multipart/form-data; boundary=${BOUNDARY}` },
+    headers: {
+      "content-type": `multipart/form-data; boundary=${BOUNDARY}`,
+      origin: "http://localhost:3000",
+    },
     body,
   });
 }
