@@ -196,3 +196,54 @@ jobs:
           context: .
           file: Dockerfile.runner
           push: false
+
+  # End-to-end test of the one-command installer against the published
+  # GHCR images, run the way users run it (piped into bash).
+  install-script:
+    runs-on: ubuntu-latest
+    env:
+      THEOPENTRANSCRIBE_DIR: ${{ runner.temp }}/theopentranscribe
+      THEOPENTRANSCRIBE_NO_OPEN: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Lint
+        run: shellcheck install.sh
+      - name: Install (piped, like curl | bash)
+        run: cat install.sh | bash
+      - name: App is healthy
+        run: curl -fsS http://localhost:3000/api/health
+      - name: Not reachable from other machines by default
+        run: |
+          docker port theopentranscribe-web-1 3000 | tee ports.txt
+          grep -q '^127.0.0.1:3000$' ports.txt
+      - name: Upload is picked up by the runner
+        run: |
+          printf 'RIFF\x24\x02\x00\x00WAVEfmt ' > sample.wav
+          head -c 600 /dev/zero >> sample.wav
+          job=$(curl -fsS -H 'Origin: http://localhost:3000' -F file=@sample.wav \
+            http://localhost:3000/api/jobs | jq -r .data.job_id)
+          echo "job: $job"
+          # No API key is configured, so the job must leave QUEUED and end
+          # as FAILED -- which proves the runner container is working.
+          for _ in $(seq 1 60); do
+            status=$(curl -fsS "http://localhost:3000/api/jobs/$job" | jq -r .data.status)
+            echo "status: $status"
+            [ "$status" = "FAILED" ] && exit 0
+            sleep 2
+          done
+          exit 1
+      - name: Re-running updates in place and keeps settings
+        run: |
+          echo "OPENAI_API_KEY=sk-test-keep-me" >> "$THEOPENTRANSCRIBE_DIR/.env"
+          cat install.sh | bash
+          grep -q '^OPENAI_API_KEY=sk-test-keep-me$' "$THEOPENTRANSCRIBE_DIR/.env"
+          test "$(curl -fsS 'http://localhost:3000/api/jobs' | jq .pagination.total)" = 1
+      - name: Custom port and pinned version
+        run: |
+          cat install.sh | THEOPENTRANSCRIBE_PORT=3001 THEOPENTRANSCRIBE_VERSION=1.0.0 bash
+          curl -fsS http://localhost:3001/api/health
+          grep -q '^THEOPENTRANSCRIBE_VERSION=1.0.0$' "$THEOPENTRANSCRIBE_DIR/.env"
+          docker inspect theopentranscribe-web-1 --format '{{.Config.Image}}' | grep -q ':1.0.0$'
+      - name: Logs on failure
+        if: failure()
+        run: docker compose --project-directory "$THEOPENTRANSCRIBE_DIR" logs --tail 100
