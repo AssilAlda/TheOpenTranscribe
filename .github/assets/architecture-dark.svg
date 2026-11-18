@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1360" height="320" viewBox="0 0 1360 320" role="img" aria-label="Architecture: the browser uploads to web, web queues a job in SQLite, the runner picks it up and starts the transcriber, which sends audio chunks to the OpenAI API and writes the transcript back.">
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8c8473"/></marker><marker id="b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#fa78ae"/></marker></defs>
+<rect x="1" y="1" width="1358" height="318" rx="24" fill="#1a1815" stroke="#38332b" stroke-width="2"/>
+<text x="40" y="48" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" fill="#b7af9f"><tspan font-weight="700" fill="#fa78ae">●</tspan>  runs in your Docker containers</text>
+<rect x="40.0" y="84" width="160" height="108" rx="16" fill="#24211c" stroke="#38332b" stroke-width="1.5"/>
+<text x="120.0" y="126" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="20" font-weight="700" fill="#f6f4ef">🌐 Browser</text>
+<text x="120.0" y="152" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" fill="#b7af9f">you</text>
+<rect x="264.0" y="84" width="160" height="108" rx="16" fill="#2e1a23" stroke="#fa78ae" stroke-width="2"/>
+<text x="344.0" y="126" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="20" font-weight="700" fill="#f6f4ef">web</text>
+<text x="344.0" y="152" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" fill="#b7af9f">Next.js</text>
+<text x="344.0" y="172" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" fill="#b7af9f">dashboard + API</text>
+<rect x="488.0" y="84" width="160" height="108" rx="16" fill="#24211c" stroke="#38332b" stroke-width="1.5"/>
+<text x="568.0" y="126" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="20" font-weight="700" fill="#f6f4ef">SQLite</text>
+<text x="568.0" y="152" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" fill="#b7af9f">jobs</text>
+<text x="568.0" y="172" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" fill="#b7af9f">+ your files</text>
+<rect x="712.0" y="84" width="160" height="108" rx="16" fill="#2e1a23" stroke="#fa78ae" stroke-width="2"/>
+<text x="792.0" y="126" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="20" font-weight="700" fill="#f6f4ef">runner</text>
+<text x="792.0" y="152" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" fill="#b7af9f">background</text>
+<text x="792.0" y="172" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" fill="#b7af9f">worker</text>
+<rect x="936.0" y="84" width="160" height="108" rx="16" fill="#2e1a23" stroke="#fa78ae" stroke-width="2"/>
+<text x="1016.0" y="126" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="20" font-weight="700" fill="#f6f4ef">transcriber</text>
+<text x="1016.0" y="152" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" fill="#b7af9f">Python</text>
+<text x="1016.0" y="172" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" fill="#b7af9f">+ ffmpeg</text>
+<rect x="1160.0" y="84" width="160" height="108" rx="16" fill="#24211c" stroke="#38332b" stroke-width="1.5"/>
+<text x="1240.0" y="126" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="20" font-weight="700" fill="#f6f4ef">☁️ OpenAI</text>
+<text x="1240.0" y="152" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" fill="#b7af9f">gpt-4o-transcribe</text>
+<line x1="208.0" y1="148.0" x2="256.0" y2="148.0" stroke="#8c8473" stroke-width="2" marker-end="url(#a)"/>
+<text x="232.0" y="132.0" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="13" fill="#b7af9f">upload</text>
+<line x1="432.0" y1="148.0" x2="480.0" y2="148.0" stroke="#8c8473" stroke-width="2" marker-end="url(#a)"/>
+<text x="456.0" y="116.0" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="13" fill="#b7af9f">queue</text>
+<text x="456.0" y="132.0" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="13" fill="#b7af9f">job</text>
+<line x1="704.0" y1="148.0" x2="656.0" y2="148.0" stroke="#8c8473" stroke-width="2" marker-end="url(#a)"/>
+<text x="680.0" y="116.0" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="13" fill="#b7af9f">pick up</text>
+<text x="680.0" y="132.0" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="13" fill="#b7af9f">job</text>
+<line x1="880.0" y1="148.0" x2="928.0" y2="148.0" stroke="#8c8473" stroke-width="2" marker-end="url(#a)"/>
+<text x="904.0" y="132.0" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="13" fill="#b7af9f">start</text>
+<line x1="1104.0" y1="148.0" x2="1152.0" y2="148.0" stroke="#8c8473" stroke-width="2" marker-end="url(#a)"/>
+<text x="1128.0" y="116.0" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="13" fill="#b7af9f">audio</text>
+<text x="1128.0" y="132.0" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="13" fill="#b7af9f">chunks</text>
+<path d="M1016.0,198 C1016.0,272 568.0,272 568.0,202" fill="none" stroke="#fa78ae" stroke-width="2" stroke-dasharray="6 5" marker-end="url(#b)"/>
+<rect x="730.0" y="242" width="124" height="28" rx="14" fill="#1a1815"/>
+<text x="792.0" y="261" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="600" fill="#fa78ae">transcript</text>
+</svg>
