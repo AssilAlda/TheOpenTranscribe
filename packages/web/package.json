@@ -1,7 +1,7 @@
 {
   "name": "@theopentranscribe/web",
   "version": "0.1.0",
-  "description": "Phase 5 Web API (Next.js Route Handlers) + Phase 6 dashboard UI: upload handling + validation, job creation, job/history queries, serving results, and a dashboard for uploading, tracking, reading, and exporting transcripts.",
+  "description": "Web API (Next.js Route Handlers) + dashboard UI: upload handling + validation, job creation, job/history queries, serving results, and a dashboard for uploading, tracking, reading, and exporting transcripts.",
   "private": true,
   "scripts": {
     "build:provider-config": "npm --prefix ../provider-config install --no-audit --no-fund --include=dev && npm --prefix ../provider-config run build",

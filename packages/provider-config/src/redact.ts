@@ -1,18 +1,16 @@
 /**
- * Owner Decision 10: layered secret redaction. This is the shared pattern
- * library consumed by packages/runner's stderr-capture boundary (the
- * mandatory backstop for subprocess diagnostics) and by packages/web's
- * OpenAI-validation error path -- one implementation, not two independently
- * maintained regex sets. Defense in depth, not a cryptographic guarantee
- * (Owner Decision 10 §13): a novel secret format or unexpected diagnostic
- * shape may still evade heuristic matching, which is exactly why callers are
- * also expected to avoid raw exception dumps and prefer structured safe
- * diagnostics wherever they can.
+ * Layered secret redaction. This is the shared pattern library consumed by
+ * packages/runner's stderr-capture boundary (the mandatory backstop for
+ * subprocess diagnostics) and by packages/web's OpenAI-validation error path
+ * -- one implementation, not two independently maintained regex sets. Defense
+ * in depth, not a cryptographic guarantee: a novel secret format or
+ * unexpected diagnostic shape may still evade heuristic matching, which is
+ * exactly why callers are also expected to avoid raw exception dumps and
+ * prefer structured safe diagnostics wherever they can.
  *
- * Redaction failure-safety (Owner Decision 10 §15) is the caller's
- * responsibility: wrap calls to redactSecretText in a try/catch and fall
- * back to a safe generic message on any unexpected error -- never fall back
- * to the raw, unredacted input.
+ * Redaction failure-safety is the caller's responsibility: wrap calls to
+ * redactSecretText in a try/catch and fall back to a safe generic message on
+ * any unexpected error -- never fall back to the raw, unredacted input.
  */
 
 const REDACTED = "[REDACTED]";
@@ -24,7 +22,7 @@ const BARE_BEARER_PATTERN = /\bbearer\s+[a-zA-Z0-9._~+/=-]{8,}/gi;
 // Generic structured key/value secrets. Not dependent on any one provider's
 // exact key prefix (e.g. "sk-") -- OpenAI's key format may evolve, and this
 // also covers a future CONNECTED_ACCOUNT provider's access/refresh tokens
-// without requiring a redesign (Owner Decision 10 §11).
+// without requiring a redesign.
 const SECRET_KEY_VALUE_PATTERN =
   /\b(api[_-]?key|access[_-]?token|refresh[_-]?token|client[_-]?secret|authorization|password|secret)\b"?\s*[:=]\s*"?[a-zA-Z0-9._~+/=-]{4,}"?/gi;
 

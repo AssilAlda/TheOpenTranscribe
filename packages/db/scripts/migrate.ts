@@ -1,5 +1,5 @@
 /**
- * Applies pending Phase 3 migrations against DATA_DIR/theopentranscribe.sqlite3.
+ * Applies pending migrations against DATA_DIR/theopentranscribe.sqlite3.
  * Usage (from packages/db): DATA_DIR=/path/to/data npm run db:migrate
  */
 import { openDb } from "../src/client.js";

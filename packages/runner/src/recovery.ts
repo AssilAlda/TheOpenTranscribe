@@ -3,15 +3,15 @@ import { eq, jobs, type DbClient } from "@theopentranscribe/db";
 export const STALE_PROCESSING_REASON =
   "runner restarted while job was PROCESSING; not auto-retried " +
   "(the previous process may already have reached the transcription provider " +
-  "and incurred cost) — see docs/ARCHITECTURE.md §7";
+  "and incurred cost)";
 
 /**
- * Locked Phase 4 recovery semantics (docs/ARCHITECTURE.md §7): on runner
- * startup, every row still PROCESSING is treated as orphaned and is
- * unconditionally marked FAILED with an explicit reason, with no way to
- * distinguish "actually orphaned" from "another runner process is
- * legitimately processing it right now". Never auto-retried; a
- * user-triggered retry must create a new QUEUED job elsewhere.
+ * Stale-job recovery semantics: on runner startup, every row still PROCESSING
+ * is treated as orphaned and is unconditionally marked FAILED with an
+ * explicit reason, with no way to distinguish "actually orphaned" from
+ * "another runner process is legitimately processing it right now". Never
+ * auto-retried; a user-triggered retry must create a new QUEUED job
+ * elsewhere.
  *
  * This unconditional sweep is only correct under the operational invariant
  * that exactly one runner process runs against a given DATA_DIR at a time.
@@ -21,7 +21,7 @@ export const STALE_PROCESSING_REASON =
  * claim (claim.ts) only prevents two processes from claiming the *same* row
  * at the *same* instant; it does not make concurrent runner processes safe
  * in general. Running more than one runner process per DATA_DIR is
- * unsupported in Phase 4, not merely discouraged.
+ * unsupported, not merely discouraged.
  */
 export function recoverStaleProcessingJobs(db: DbClient): number {
   const now = new Date().toISOString();

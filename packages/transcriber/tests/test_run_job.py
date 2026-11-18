@@ -177,10 +177,9 @@ def test_parse_args_requires_input_and_output():
     assert args.language == "de"
 
 
-# Owner Decision 10 (Phase 7 secret redaction): run_job.py must never print a
-# raw stringified provider exception to stderr -- only a safe, non-secret
-# diagnostic (exception type, and a status code when the exception exposes
-# one as a plain attribute).
+# Secret redaction: run_job.py must never print a raw stringified provider
+# exception to stderr -- only a safe, non-secret diagnostic (exception type,
+# and a status code when the exception exposes one as a plain attribute).
 
 
 def test_safe_failure_message_omits_raw_exception_text():

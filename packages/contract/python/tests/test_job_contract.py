@@ -75,11 +75,11 @@ def test_optional_language_field_can_be_omitted():
 # ---------------------------------------------------------------------------
 # input.language: provider-neutral, no fixed allowlist
 #
-# Phase 1's OpenAIProvider.transcribe() forwards whatever language string
-# it's given straight through to the OpenAI API with no restriction — the
-# `sv`/`en` choice in cli.py's argparse is a CLI UX decision, not an engine
-# capability limit. The contract must not invent a stricter allowlist than
-# Phase 1 itself enforces.
+# The transcriber's OpenAIProvider.transcribe() forwards whatever language
+# string it's given straight through to the OpenAI API with no restriction —
+# the `sv`/`en` choice in cli.py's argparse is a CLI UX decision, not an
+# engine capability limit. The contract must not invent a stricter allowlist
+# than the transcriber itself enforces.
 # ---------------------------------------------------------------------------
 
 

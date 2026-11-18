@@ -434,7 +434,7 @@
   box-shadow: var(--shadow-sm);
 }
 
-/* Deliberately NOT dimmed -- owner decision: disabled (no file picked yet,
+/* Deliberately NOT dimmed (a design choice): disabled (no file picked yet,
    uploading, or already done) keeps the exact same fill/foreground as the
    enabled button, full saturation, no opacity/gray/pale treatment. The
    button is still genuinely non-interactive: it uses the native `disabled`

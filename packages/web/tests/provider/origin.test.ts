@@ -62,7 +62,7 @@ describe("isRequestOriginTrusted", () => {
     expect(isRequestOriginTrusted(makeRequest(null))).toBe(false);
   });
 
-  // CORRECTION 1's core scenario: an attacker's own page has Origin and Host
+  // DNS-rebinding scenario: an attacker's own page has Origin and Host
   // agreeing with each other (both the attacker's own hostname) -- a naive
   // check comparing Origin against the request's own Host header would
   // incorrectly accept this. This module never reads Host at all, so it

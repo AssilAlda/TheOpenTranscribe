@@ -1,13 +1,13 @@
 import { redactSecretText } from "@theopentranscribe/provider-config";
 
 /**
- * Owner Decision 10 (stream-safe redaction, blocker B1 fix): Node delivers a
- * child process's stderr as arbitrarily-chunked `data` events -- there is no
- * guarantee a single logical line (let alone a single credential) arrives in
- * one chunk. Redacting each chunk independently (the original implementation)
- * could let a credential or a generic key/value secret pattern that happens
- * to straddle a chunk boundary slip through both halves unredacted, in the
- * live relay, the captured tail, and therefore jobs.error_message.
+ * Stream-safe redaction: Node delivers a child process's stderr as
+ * arbitrarily-chunked `data` events -- there is no guarantee a single logical
+ * line (let alone a single credential) arrives in one chunk. Redacting each
+ * chunk independently (the original implementation) could let a credential or
+ * a generic key/value secret pattern that happens to straddle a chunk
+ * boundary slip through both halves unredacted, in the live relay, the
+ * captured tail, and therefore jobs.error_message.
  *
  * This buffers incoming text and only redacts+emits once a full,
  * newline-terminated line has been assembled. That is safe -- not merely

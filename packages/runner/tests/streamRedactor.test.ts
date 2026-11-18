@@ -14,7 +14,7 @@ afterEach(() => {
 });
 
 /**
- * Blocker B1: these feed exact chunk boundaries directly into the redactor
+ * These feed exact chunk boundaries directly into the redactor
  * (bypassing OS/pipe timing entirely) so the chunk split point is
  * deterministic, not merely likely. spawnCapture.test.ts separately proves
  * the real wiring through an actual child process.
@@ -117,15 +117,15 @@ describe("StreamRedactor -- cross-chunk secret safety", () => {
 });
 
 /**
- * Blocker B1 re-review: the old forced-flush design carried a trailing
- * window sized from `knownSecretLength + 32` past the line-buffer bound.
- * That is a heuristic, not a proof -- a generic secret pattern has no
- * assumable maximum length, so any fixed carry window can be defeated by a
- * long enough credential positioned to straddle the exact cut point. These
- * tests exercise the replacement fail-closed design: once a line exceeds
- * MAX_LINE_BUFFER_CHARS (65536) before its terminating newline, the whole
- * line is replaced by one fixed placeholder and nothing from it -- no
- * prefix, no suffix, no fragment -- is ever emitted raw.
+ * The old forced-flush design carried a trailing window sized from
+ * `knownSecretLength + 32` past the line-buffer bound. That is a heuristic,
+ * not a proof -- a generic secret pattern has no assumable maximum length, so
+ * any fixed carry window can be defeated by a long enough credential
+ * positioned to straddle the exact cut point. These tests exercise the
+ * replacement fail-closed design: once a line exceeds MAX_LINE_BUFFER_CHARS
+ * (65536) before its terminating newline, the whole line is replaced by one
+ * fixed placeholder and nothing from it -- no prefix, no suffix, no fragment
+ * -- is ever emitted raw.
  */
 describe("StreamRedactor -- fail-closed oversized-line suppression", () => {
   const MAX_LINE_BUFFER_CHARS = 65536;

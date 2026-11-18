@@ -22,7 +22,7 @@ export interface UseProviderStatusResult {
   status: ProviderStatus | null;
   loading: boolean;
   error: string | null;
-  /** Re-fetches from the server -- the only source of truth for this state (Owner Decision 5 §9). */
+  /** Re-fetches from the server -- the only source of truth for this state. */
   refresh: () => Promise<void>;
 }
 
@@ -31,7 +31,7 @@ export interface UseProviderStatusResult {
  * The frontend never invents credential state independently -- every status
  * value shown to the operator comes directly from this fetch, including
  * after a Configure/Replace/Remove mutation or an ambiguous transport
- * failure during one (Owner Decision 5 §9, CORRECTION 2 §2C).
+ * failure during one.
  */
 export function useProviderStatus(): UseProviderStatusResult {
   const [status, setStatus] = useState<ProviderStatus | null>(null);
